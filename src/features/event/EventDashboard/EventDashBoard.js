@@ -1,8 +1,7 @@
 import React, { Component } from 'react'
-import PropTypes from 'prop-types'
+// import PropTypes from 'prop-types'
+import cuid from 'cuid'
 import { Grid, Button } from 'semantic-ui-react'
-
-import { toggleStateKey } from '../../../utils'
 
 import EventList from '../EventList/EventList'
 import EventForm from '../EventForm/EventForm'
@@ -76,8 +75,17 @@ class EventDashBoard extends Component {
     })
   }
 
+  handleCreateEvent = newEvent => {
+    newEvent.id = cuid()
+    newEvent.hostPhotoURL = '/assets/user.png'
+    this.setState(state => ({
+      events: [...state.events, newEvent],
+    }))
+  }
+
   render() {
     const { events, isFormOpen } = this.state
+
     return (
       <Grid>
         <Grid.Column width={10}>
@@ -89,7 +97,12 @@ class EventDashBoard extends Component {
             positive
             onClick={this.handleOpenForm}
           />
-          {isFormOpen && <EventForm handleCloseForm={this.handleCloseForm} />}
+          {isFormOpen && (
+            <EventForm
+              handleCloseForm={this.handleCloseForm}
+              handleCreateEvent={this.handleCreateEvent}
+            />
+          )}
         </Grid.Column>
       </Grid>
     )

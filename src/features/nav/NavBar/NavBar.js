@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import PropTypes from 'prop-types'
+// import PropTypes from 'prop-types'
 import { Menu, Container, Button } from 'semantic-ui-react'
 
 class NavBar extends Component {

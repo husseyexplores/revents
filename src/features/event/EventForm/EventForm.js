@@ -3,30 +3,78 @@ import PropTypes from 'prop-types'
 import { Segment, Form, Button } from 'semantic-ui-react'
 
 class EventForm extends Component {
+  state = {
+    event: {
+      title: '',
+      date: '',
+      city: '',
+      venue: '',
+      hostedBy: '',
+    },
+  }
+
+  onInputChange = e => {
+    const newEvent = this.state.event
+    newEvent[e.target.name] = e.target.value
+    this.setState({
+      event: newEvent,
+    })
+  }
+
+  onSubmit = e => {
+    e.preventDefault()
+    const { handleCreateEvent } = this.props
+    handleCreateEvent(this.state.event)
+  }
+
   render() {
-    const { handleCloseForm } = this.props
+    const { handleCloseForm, handleCreateEvent } = this.props
+    const { title } = this.state.event
+
     return (
       <Segment>
-        <Form>
+        <Form onSubmit={this.onSubmit}>
           <Form.Field>
             <label>Event Title</label>
-            <input placeholder="First Name" />
+            <input
+              name="title"
+              placeholder="Event Title"
+              value={title}
+              onChange={this.onInputChange}
+            />
           </Form.Field>
           <Form.Field>
             <label>Event Date</label>
-            <input type="date" placeholder="Event Date" />
+            <input
+              name="date"
+              type="date"
+              placeholder="Event Date"
+              onChange={this.onInputChange}
+            />
           </Form.Field>
           <Form.Field>
             <label>City</label>
-            <input placeholder="City event is taking place" />
+            <input
+              name="city"
+              placeholder="City event is taking place"
+              onChange={this.onInputChange}
+            />
           </Form.Field>
           <Form.Field>
             <label>Venue</label>
-            <input placeholder="Enter the Venue of the event" />
+            <input
+              name="venue"
+              placeholder="Enter the Venue of the event"
+              onChange={this.onInputChange}
+            />
           </Form.Field>
           <Form.Field>
             <label>Hosted By</label>
-            <input placeholder="Enter the name of person hosting" />
+            <input
+              name="hostedBy"
+              placeholder="Enter the name of person hosting"
+              onChange={this.onInputChange}
+            />
           </Form.Field>
           <Button positive type="submit">
             Submit
@@ -42,6 +90,7 @@ class EventForm extends Component {
 
 EventForm.propTypes = {
   handleCloseForm: PropTypes.func.isRequired,
+  handleCreateEvent: PropTypes.func.isRequired,
 }
 
 EventForm.defaultProps = {}
