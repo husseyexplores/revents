@@ -25,6 +25,7 @@ class EventList extends Component {
       </Loader>
     )
   }
+
   render() {
     return (
       <div>
