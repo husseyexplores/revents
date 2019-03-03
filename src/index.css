@@ -27,6 +27,7 @@ body {
           rgb(33, 138, 174) 69%,
           rgb(32, 167, 172) 89%
   ) !important;
+
 }
 
 .masthead.segment {
@@ -34,13 +35,18 @@ body {
   padding: 1em 0 !important;
 }
 
+.masthead.homepage {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 .masthead .ui.menu .ui.button,
 .ui.menu a.ui.inverted.button {
   margin-left: 0.5em;
 }
 
 .masthead h1.ui.header {
-  margin-top: 3em;
   margin-bottom: 0;
   font-size: 4em;
   font-weight: normal;
