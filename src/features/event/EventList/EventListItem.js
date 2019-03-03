@@ -16,7 +16,7 @@ class EventListItem extends Component {
   }
 
   render() {
-    const { event } = this.props
+    const { event, handleOpenEvent } = this.props
     const {
       title,
       date,
@@ -55,7 +55,13 @@ class EventListItem extends Component {
         </Segment>
         <Segment clearing>
           <span>{description}</span>
-          <Button as="a" color="teal" floated="right" content="View" />
+          <Button
+            onClick={handleOpenEvent(event)}
+            as="a"
+            color="teal"
+            floated="right"
+            content="View"
+          />
         </Segment>
       </Segment.Group>
     )
@@ -74,6 +80,7 @@ EventListItem.propTypes = {
     hostPhotoURL: PropTypes.string,
     attendees: PropTypes.arrayOf(PropTypes.object),
   }),
+  handleOpenEvent: PropTypes.func,
 }
 
 EventListItem.defaultProps = {}

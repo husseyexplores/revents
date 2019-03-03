@@ -10,12 +10,13 @@ const rootEl = document.getElementById('root')
 function render() {
   ReactDOM.render(<App />, rootEl)
 }
-
+/*
 if (module.hot) {
   module.hot.accept('./app/layout/App', () => {
     setTimeout(render)
   })
 }
+*/
 
 render()
 

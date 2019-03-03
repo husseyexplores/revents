@@ -10,7 +10,7 @@ const EVENTS_DUMMY_DATA = [
   {
     id: '1',
     title: 'Trip to Tower of London',
-    date: '2018-03-27T11:00:00+00:00',
+    date: '2018-03-27',
     category: 'culture',
     description:
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus sollicitudin ligula eu leo tincidunt, quis scelerisque magna dapibus. Sed eget ipsum vel arcu vehicula ullamcorper.',
@@ -34,7 +34,7 @@ const EVENTS_DUMMY_DATA = [
   {
     id: '2',
     title: 'Trip to Punch and Judy Pub',
-    date: '2018-03-28T14:00:00+00:00',
+    date: '2018-03-28',
     category: 'drinks',
     description:
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus sollicitudin ligula eu leo tincidunt, quis scelerisque magna dapibus. Sed eget ipsum vel arcu vehicula ullamcorper.',
@@ -61,17 +61,39 @@ class EventDashBoard extends Component {
   state = {
     events: EVENTS_DUMMY_DATA,
     isFormOpen: false,
+    selectedEvent: null,
   }
 
   handleOpenForm = () => {
     this.setState({
       isFormOpen: true,
+      selectedEvent: null,
     })
   }
 
   handleCloseForm = () => {
     this.setState({
       isFormOpen: false,
+    })
+  }
+
+  handleUpdateEvent = updatedEvent => {
+    this.setState({
+      events: this.state.events.map(event => {
+        if (event.id === updatedEvent.id) {
+          return Object.assign({}, updatedEvent)
+        }
+        return event
+      }),
+      isFormOpen: false,
+      selectedEvent: null,
+    })
+  }
+
+  handleOpenEvent = eventToOpen => e => {
+    this.setState({
+      selectedEvent: eventToOpen,
+      isFormOpen: true,
     })
   }
 
@@ -84,12 +106,12 @@ class EventDashBoard extends Component {
   }
 
   render() {
-    const { events, isFormOpen } = this.state
+    const { events, isFormOpen, selectedEvent } = this.state
 
     return (
       <Grid>
         <Grid.Column width={10}>
-          <EventList events={events} />
+          <EventList handleOpenEvent={this.handleOpenEvent} events={events} />
         </Grid.Column>
         <Grid.Column width={6}>
           <Button
@@ -99,8 +121,10 @@ class EventDashBoard extends Component {
           />
           {isFormOpen && (
             <EventForm
+              selectedEvent={selectedEvent}
               handleCloseForm={this.handleCloseForm}
               handleCreateEvent={this.handleCreateEvent}
+              handleUpdateEvent={this.handleUpdateEvent}
             />
           )}
         </Grid.Column>
