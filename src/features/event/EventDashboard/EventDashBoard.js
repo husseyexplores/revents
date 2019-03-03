@@ -90,9 +90,11 @@ class EventDashBoard extends Component {
     })
   }
 
-  handleOpenEvent = eventToOpen => e => {
+  handleOpenEvent = eventToOpen => (/* e */) => {
     this.setState({
-      selectedEvent: eventToOpen,
+      // spreading `eventToOpen` because it is a reference of the `satte.events` event
+      // without spreading, it updates the `state.events` array too.
+      selectedEvent: { ...eventToOpen },
       isFormOpen: true,
     })
   }
@@ -105,13 +107,24 @@ class EventDashBoard extends Component {
     }))
   }
 
+  handleDeleteEvent = eventId => () => {
+    this.setState(state => ({
+      events: state.events.filter(event => event.id !== eventId),
+      isFormOpen: false,
+    }))
+  }
+
   render() {
     const { events, isFormOpen, selectedEvent } = this.state
 
     return (
       <Grid>
         <Grid.Column width={10}>
-          <EventList handleOpenEvent={this.handleOpenEvent} events={events} />
+          <EventList
+            handleOpenEvent={this.handleOpenEvent}
+            handleDeleteEvent={this.handleDeleteEvent}
+            events={events}
+          />
         </Grid.Column>
         <Grid.Column width={6}>
           <Button

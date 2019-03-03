@@ -16,17 +16,17 @@ class EventListItem extends Component {
   }
 
   render() {
-    const { event, handleOpenEvent } = this.props
+    const { event, handleOpenEvent, handleDeleteEvent } = this.props
     const {
       title,
       date,
-      category,
+      // category,
       description,
-      city,
+      // city,
       venue,
       hostedBy,
       hostPhotoURL,
-      attendees,
+      // attendees,
     } = event
 
     return (
@@ -61,6 +61,13 @@ class EventListItem extends Component {
             color="teal"
             floated="right"
             content="View"
+          />
+          <Button
+            onClick={handleDeleteEvent(event.id)}
+            as="a"
+            color="red"
+            floated="right"
+            content="Delete"
           />
         </Segment>
       </Segment.Group>
