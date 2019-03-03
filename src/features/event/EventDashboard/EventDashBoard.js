@@ -1,65 +1,16 @@
 import React, { Component } from 'react'
-// import PropTypes from 'prop-types'
+import PropTypes from 'prop-types'
+import { connect } from 'react-redux'
 import cuid from 'cuid'
 import { Grid, Button } from 'semantic-ui-react'
+
+import { createEvent, updateEvent, deleteEvent } from '../eventActions'
 
 import EventList from '../EventList/EventList'
 import EventForm from '../EventForm/EventForm'
 
-const EVENTS_DUMMY_DATA = [
-  {
-    id: '1',
-    title: 'Trip to Tower of London',
-    date: '2018-03-27',
-    category: 'culture',
-    description:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus sollicitudin ligula eu leo tincidunt, quis scelerisque magna dapibus. Sed eget ipsum vel arcu vehicula ullamcorper.',
-    city: 'London, UK',
-    venue: "Tower of London, St Katharine's & Wapping, London",
-    hostedBy: 'Bob',
-    hostPhotoURL: 'https://randomuser.me/api/portraits/men/20.jpg',
-    attendees: [
-      {
-        id: 'a',
-        name: 'Bob',
-        photoURL: 'https://randomuser.me/api/portraits/men/20.jpg',
-      },
-      {
-        id: 'b',
-        name: 'Tom',
-        photoURL: 'https://randomuser.me/api/portraits/men/22.jpg',
-      },
-    ],
-  },
-  {
-    id: '2',
-    title: 'Trip to Punch and Judy Pub',
-    date: '2018-03-28',
-    category: 'drinks',
-    description:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus sollicitudin ligula eu leo tincidunt, quis scelerisque magna dapibus. Sed eget ipsum vel arcu vehicula ullamcorper.',
-    city: 'London, UK',
-    venue: 'Punch & Judy, Henrietta Street, London, UK',
-    hostedBy: 'Tom',
-    hostPhotoURL: 'https://randomuser.me/api/portraits/men/22.jpg',
-    attendees: [
-      {
-        id: 'b',
-        name: 'Tom',
-        photoURL: 'https://randomuser.me/api/portraits/men/22.jpg',
-      },
-      {
-        id: 'a',
-        name: 'Bob',
-        photoURL: 'https://randomuser.me/api/portraits/men/20.jpg',
-      },
-    ],
-  },
-]
-
 class EventDashBoard extends Component {
   state = {
-    events: EVENTS_DUMMY_DATA,
     isFormOpen: false,
     selectedEvent: null,
   }
@@ -77,19 +28,6 @@ class EventDashBoard extends Component {
     })
   }
 
-  handleUpdateEvent = updatedEvent => {
-    this.setState({
-      events: this.state.events.map(event => {
-        if (event.id === updatedEvent.id) {
-          return Object.assign({}, updatedEvent)
-        }
-        return event
-      }),
-      isFormOpen: false,
-      selectedEvent: null,
-    })
-  }
-
   handleOpenEvent = eventToOpen => (/* e */) => {
     this.setState({
       // spreading `eventToOpen` because it is a reference of the `satte.events` event
@@ -102,20 +40,33 @@ class EventDashBoard extends Component {
   handleCreateEvent = newEvent => {
     newEvent.id = cuid()
     newEvent.hostPhotoURL = '/assets/user.png'
-    this.setState(state => ({
-      events: [...state.events, newEvent],
-    }))
+
+    const { createEvent } = this.props
+    createEvent(newEvent)
+  }
+
+  handleUpdateEvent = updatedEvent => {
+    const { updateEvent } = this.props
+    updateEvent(updatedEvent)
+
+    this.setState({
+      isFormOpen: false,
+      selectedEvent: null,
+    })
   }
 
   handleDeleteEvent = eventId => () => {
-    this.setState(state => ({
-      events: state.events.filter(event => event.id !== eventId),
+    const { deleteEvent } = this.props
+    deleteEvent(eventId)
+
+    this.setState({
       isFormOpen: false,
-    }))
+    })
   }
 
   render() {
-    const { events, isFormOpen, selectedEvent } = this.state
+    const { events } = this.props
+    const { isFormOpen, selectedEvent } = this.state
 
     return (
       <Grid>
@@ -146,8 +97,30 @@ class EventDashBoard extends Component {
   }
 }
 
-EventDashBoard.propTypes = {}
+EventDashBoard.propTypes = {
+  events: PropTypes.array,
+  createEvent: PropTypes.func.isRequired,
+  updateEvent: PropTypes.func.isRequired,
+  deleteEvent: PropTypes.func.isRequired,
+}
 
 EventDashBoard.defaultProps = {}
 
-export default EventDashBoard
+function mapState(state) {
+  return {
+    events: state.events,
+  }
+}
+
+function mapDispatch(dispatch) {
+  return {
+    createEvent: event => dispatch(createEvent(event)),
+    updateEvent: event => dispatch(updateEvent(event)),
+    deleteEvent: eventId => dispatch(deleteEvent(eventId)),
+  }
+}
+
+export default connect(
+  mapState,
+  mapDispatch
+)(EventDashBoard)
