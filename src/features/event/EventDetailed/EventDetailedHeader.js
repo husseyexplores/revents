@@ -60,7 +60,7 @@ function EventDetailedHeader({ title, category, date, hostedBy, id }) {
 EventDetailedHeader.propTypes = {
   title: PropTypes.string.isRequired,
   category: PropTypes.string.isRequired,
-  date: PropTypes.string.isRequired,
+  date: PropTypes.any.isRequired,
   hostedBy: PropTypes.string,
   id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 }

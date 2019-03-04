@@ -15,9 +15,9 @@ const configureStore = preloadedState => {
 
   const storeEnhancers = [middlewareEnahcer, reduxDevToolsInitializer]
 
-  const composedEnhancer = compose(...storeEnhancers)
+  const composedEnhancers = compose(...storeEnhancers)
 
-  const store = createStore(rootReducer, preloadedState, composedEnhancer)
+  const store = createStore(rootReducer, preloadedState, composedEnhancers)
 
   if (process.env.NODE_ENV !== 'production') {
     if (module.hot) {

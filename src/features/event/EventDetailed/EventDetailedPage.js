@@ -1,12 +1,15 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
+import { format as formatDate } from 'date-fns'
 import { Grid } from 'semantic-ui-react'
 
 import EventDetailedHeader from './EventDetailedHeader'
 import EventDetailedInfo from './EventDetailedInfo'
 import EventDetailedChat from './EventDetailedChat'
 import EventDetailedSidebar from './EventDetailedSidebar'
+
+import { eventPropTypes } from '../eventPropTypes'
 
 function EventDetailedPage({ event }) {
   const {
@@ -22,19 +25,21 @@ function EventDetailedPage({ event }) {
     id,
   } = event
 
+  const formattedDate = formatDate(date, 'yyyy-MM-dd HH:mm')
+
   return (
     <Grid>
       <Grid.Column width={10}>
         <EventDetailedHeader
           title={title}
           category={category}
-          date={date}
+          date={formattedDate}
           hostedBy={hostedBy}
           id={id}
         />
         <EventDetailedInfo
           description={description}
-          date={date}
+          date={formattedDate}
           venue={venue}
         />
         <EventDetailedChat />
@@ -47,17 +52,7 @@ function EventDetailedPage({ event }) {
 }
 
 EventDetailedPage.propTypes = {
-  event: PropTypes.shape({
-    title: PropTypes.string,
-    date: PropTypes.string,
-    category: PropTypes.string,
-    description: PropTypes.string,
-    city: PropTypes.string,
-    venue: PropTypes.string,
-    hostedBy: PropTypes.string,
-    hostPhotoURL: PropTypes.string,
-    attendees: PropTypes.arrayOf(PropTypes.object),
-  }).isRequired,
+  event: eventPropTypes.isRequired,
 }
 
 EventDetailedPage.defaultProps = {}
@@ -68,6 +63,10 @@ function mapState(state, ownProps) {
 
   if (currentEventId && state.events.length > 0) {
     event = state.events.filter(evt => evt.id === currentEventId)[0]
+  }
+
+  if (!event.attendees) {
+    event.attendees = []
   }
 
   return {

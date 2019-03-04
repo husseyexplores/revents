@@ -80,7 +80,7 @@ class EventListItem extends Component {
 EventListItem.propTypes = {
   event: PropTypes.shape({
     title: PropTypes.string,
-    date: PropTypes.string,
+    date: PropTypes.any,
     category: PropTypes.string,
     description: PropTypes.string,
     city: PropTypes.string,

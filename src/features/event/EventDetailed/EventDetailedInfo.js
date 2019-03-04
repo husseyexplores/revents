@@ -44,7 +44,7 @@ function EventDetailedInfo({ description, date, venue }) {
 
 EventDetailedInfo.propTypes = {
   description: PropTypes.string.isRequired,
-  date: PropTypes.string.isRequired,
+  date: PropTypes.any.isRequired,
   venue: PropTypes.string.isRequired,
 }
 
