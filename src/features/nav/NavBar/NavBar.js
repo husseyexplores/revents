@@ -23,7 +23,7 @@ class NavBar extends Component {
     })
 
     const { history } = this.props
-    // history.push('/')
+    history.push('/events')
   }
 
   render() {

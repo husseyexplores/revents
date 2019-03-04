@@ -58,13 +58,13 @@ export function createEventReducer(state, { event }) {
 }
 
 export function updateEventReducer(state, { event }) {
-  return [
-    ...state.map(evt => (evt.id === event.id ? Object.assign({}, event) : evt)),
-  ]
+  return state.map(evt =>
+    evt.id === event.id ? Object.assign({}, event) : evt
+  )
 }
 
 export function deleteEventReducer(state, { eventId }) {
-  return [...state.filter(evt => evt.id !== eventId)]
+  return state.filter(evt => evt.id !== eventId)
 }
 
 export default createReducer(initalState, {

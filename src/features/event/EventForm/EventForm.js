@@ -1,36 +1,14 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import { connect } from 'react-redux'
+import cuid from 'cuid'
 import { Segment, Form, Button } from 'semantic-ui-react'
 
-const emptyEvent = {
-  title: '',
-  date: '',
-  city: '',
-  venue: '',
-  hostedBy: '',
-}
+import { createEvent, updateEvent, deleteEvent } from '../eventActions'
 
 class EventForm extends Component {
   state = {
-    event: this.props.selectedEvent ? this.props.selectedEvent : emptyEvent,
-  }
-
-  static getDerivedStateFromProps(nextProps, prevState) {
-    // if the new form is empty,
-    // then reset the form
-    if (nextProps.selectedEvent === null) {
-      return {
-        event: emptyEvent,
-      }
-    }
-    // if the previous form data is different then new form data,
-    // then update the form
-    if (prevState.event.id !== nextProps.selectedEvent.id) {
-      return {
-        event: nextProps.selectedEvent,
-      }
-    }
-    return null
+    event: { ...this.props.event },
   }
 
   onInputChange = e => {
@@ -44,17 +22,18 @@ class EventForm extends Component {
   onSubmit = e => {
     e.preventDefault()
     const { event } = this.state
-    const { handleCreateEvent, handleUpdateEvent } = this.props
+    const { createEvent, updateEvent } = this.props
 
     if (event.id) {
-      handleUpdateEvent(event)
+      updateEvent(event)
+      this.props.history.push(`/event/${event.id}`)
     } else {
-      handleCreateEvent(event)
+      createEvent({ ...event, id: cuid(), hostPhotoURL: '/assets/user.png' })
+      this.props.history.push(`/events`)
     }
   }
 
   render() {
-    const { handleCloseForm } = this.props
     const { title, date, city, venue, hostedBy } = this.state.event
 
     return (
@@ -109,7 +88,7 @@ class EventForm extends Component {
           <Button positive type="submit">
             Submit
           </Button>
-          <Button type="button" onClick={handleCloseForm}>
+          <Button type="button" onClick={this.props.history.goBack}>
             Cancel
           </Button>
         </Form>
@@ -119,12 +98,46 @@ class EventForm extends Component {
 }
 
 EventForm.propTypes = {
-  handleCloseForm: PropTypes.func.isRequired,
-  handleCreateEvent: PropTypes.func.isRequired,
-  handleUpdateEvent: PropTypes.func,
+  history: PropTypes.object,
+  closeForm: PropTypes.func,
+  createEvent: PropTypes.func,
+  updateEvent: PropTypes.func,
   selectedEvent: PropTypes.object,
+  event: PropTypes.object,
 }
 
 EventForm.defaultProps = {}
 
-export default EventForm
+function mapState(state, ownProps) {
+  const eventId = ownProps.match.params.id
+
+  const initailFormValues = {
+    title: '',
+    date: '',
+    city: '',
+    venue: '',
+    hostedBy: '',
+  }
+
+  if (eventId && state.events.length) {
+    return {
+      event: state.events.filter(evt => evt.id === eventId)[0],
+    }
+  }
+
+  // default case
+  return {
+    event: { ...initailFormValues },
+  }
+}
+
+const mapDispatch = {
+  createEvent,
+  updateEvent,
+  deleteEvent,
+}
+
+export default connect(
+  mapState,
+  mapDispatch
+)(EventForm)

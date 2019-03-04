@@ -6,14 +6,17 @@ import EventListItem from './EventListItem'
 
 class EventList extends Component {
   renderEventListItems() {
-    const { events, handleOpenEvent, handleDeleteEvent } = this.props
+    const { events, handleDeleteEvent } = this.props
 
-    if (events && events.length) {
-      return events.map(event => (
+    if (!events || !events.length) {
+      return <h4>There are no events to display.</h4>
+    }
+
+    if (events && events.length > 0) {
+      return events.map(evt => (
         <EventListItem
-          key={event.id}
-          event={event}
-          handleOpenEvent={handleOpenEvent}
+          key={evt.id}
+          event={evt}
           handleDeleteEvent={handleDeleteEvent}
         />
       ))
@@ -27,19 +30,13 @@ class EventList extends Component {
   }
 
   render() {
-    return (
-      <div>
-        <h3>Event List</h3>
-        {this.renderEventListItems()}
-      </div>
-    )
+    return <div>{this.renderEventListItems()}</div>
   }
 }
 
 EventList.propTypes = {
   events: PropTypes.arrayOf(PropTypes.object),
-  handleOpenEvent: PropTypes.func.isRequired,
-  handleDeleteEvent: PropTypes.func.isRequired,
+  handleDeleteEvent: PropTypes.func,
 }
 
 EventList.defaultProps = {}

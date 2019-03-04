@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import { Link } from 'react-router-dom'
 import { Segment, Item, Icon, List, Button } from 'semantic-ui-react'
 
 import EventListAttendee from './EventListAttendee'
@@ -16,7 +17,7 @@ class EventListItem extends Component {
   }
 
   render() {
-    const { event, handleOpenEvent, handleDeleteEvent } = this.props
+    const { event, handleDeleteEvent } = this.props
     const {
       title,
       date,
@@ -56,8 +57,9 @@ class EventListItem extends Component {
         <Segment clearing>
           <span>{description}</span>
           <Button
-            onClick={handleOpenEvent(event)}
-            as="a"
+            //  onClick={handleOpenEvent(event)}
+            as={Link}
+            to={`/event/${event.id}`}
             color="teal"
             floated="right"
             content="View"
@@ -86,8 +88,8 @@ EventListItem.propTypes = {
     hostedBy: PropTypes.string,
     hostPhotoURL: PropTypes.string,
     attendees: PropTypes.arrayOf(PropTypes.object),
-  }),
-  handleOpenEvent: PropTypes.func,
+  }).isRequired,
+  handleDeleteEvent: PropTypes.func,
 }
 
 EventListItem.defaultProps = {}
