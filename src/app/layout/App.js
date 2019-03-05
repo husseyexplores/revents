@@ -10,6 +10,7 @@ import EventForm from '../../features/event/EventForm/'
 import PeopleDashboard from '../../features/user/PeopleDashboard/'
 import UserDetailedPage from '../../features/user/UserDetailed/'
 import { SettingsDashboard } from '../../features/user/Settings/'
+import TemporaryComponent from '../../features/temp/'
 
 class App extends Component {
   render() {
@@ -33,6 +34,7 @@ class App extends Component {
                   <Route path="/people" component={PeopleDashboard} />
                   <Route path="/profile/:id" component={UserDetailedPage} />
                   <Route path="/settings" component={SettingsDashboard} />
+                  <Route path="/temp" component={TemporaryComponent} />
                 </Switch>
               </Container>
             </>

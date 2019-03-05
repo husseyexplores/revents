@@ -1,7 +1,6 @@
 import React from 'react'
-import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { format as formatDate } from 'date-fns'
+import formatDate from 'date-fns/format'
 import { Grid } from 'semantic-ui-react'
 
 import EventDetailedHeader from './EventDetailedHeader'
@@ -23,9 +22,10 @@ function EventDetailedPage({ event }) {
     venue,
     description,
     id,
+    venueLatLng: { lat, lng },
   } = event
 
-  const formattedDate = formatDate(date, 'yyyy-MM-dd HH:mm')
+  const formattedDate = formatDate(date, 'YYYY-MM-DD HH:mm')
 
   return (
     <Grid>
@@ -41,6 +41,8 @@ function EventDetailedPage({ event }) {
           description={description}
           date={formattedDate}
           venue={venue}
+          lat={lat}
+          lng={lng}
         />
         <EventDetailedChat />
       </Grid.Column>

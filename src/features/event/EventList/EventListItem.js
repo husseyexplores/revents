@@ -47,7 +47,7 @@ class EventListItem extends Component {
         </Segment>
         <Segment>
           <span>
-            <Icon name="clock" /> {date} |
+            <Icon name="clock outline" /> {date} |
             <Icon name="map marker alternate" /> {venue}
           </span>
         </Segment>

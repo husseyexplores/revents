@@ -1,3 +1,4 @@
+/* global google */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
@@ -8,7 +9,7 @@ import {
   isRequired,
   hasLengthGreaterThan,
 } from 'revalidate'
-import { format as formatDate } from 'date-fns'
+import formatDate from 'date-fns/format'
 import cuid from 'cuid'
 import { Segment, Form, Button, Grid, Header } from 'semantic-ui-react'
 
@@ -19,6 +20,7 @@ import {
   TextArea,
   SelectInput,
   DateInput,
+  PlaceInput,
 } from '../../../app/common/components/form/'
 
 const categoryOptions = [
@@ -31,6 +33,13 @@ const categoryOptions = [
 ]
 
 class EventForm extends Component {
+  state = {
+    cityLatLng: this.props.initialValues.venueLatLng || {},
+    cityError: null,
+    venueLatLng: this.props.initialValues.venueLatLng || {},
+    venueError: null,
+  }
+
   handleCancel = () => {
     const { history, match } = this.props
     const { id: eventId } = match.params
@@ -47,14 +56,17 @@ class EventForm extends Component {
 
   onSubmit = values => {
     const { initialValues, createEvent, updateEvent } = this.props
+    const { cityLatLng, venueLatLng } = this.state
     const formattedDate = formatDate(values.date)
 
     if (initialValues.id) {
-      updateEvent({ ...values, date: formattedDate })
+      updateEvent({ ...values, cityLatLng, venueLatLng, date: formattedDate })
       this.props.history.push(`/event/${initialValues.id}`)
     } else {
       createEvent({
         ...values,
+        cityLatLng,
+        venueLatLng,
         date: formattedDate,
         id: cuid(),
         hostPhotoURL: '/assets/user.png',
@@ -67,6 +79,13 @@ class EventForm extends Component {
   render() {
     // method from reduxForm
     const { handleSubmit, invalid, submitting, pristine } = this.props
+    const { cityLatLng, cityError } = this.state
+
+    let cityLocation
+
+    if (cityLatLng.lat && !cityError && window.google) {
+      cityLocation = new google.maps.LatLng(cityLatLng)
+    }
 
     return (
       <Grid>
@@ -96,13 +115,30 @@ class EventForm extends Component {
               <Header sub color="teal" content="Event Location Details" />
               <Field
                 name="city"
-                component={TextInput}
+                component={PlaceInput}
+                searchOptions={{
+                  types: ['(cities)'],
+                }}
+                onCoords={cityLatLng =>
+                  this.setState({ cityLatLng, cityError: null })
+                }
+                onError={cityError => this.setState({ cityError })}
                 type="text"
                 placeholder="Event city"
               />
               <Field
+                disabled={!cityLatLng.lat}
                 name="venue"
-                component={TextInput}
+                component={PlaceInput}
+                onCoords={venueLatLng =>
+                  this.setState({ venueLatLng, venueError: null })
+                }
+                onError={venueError => this.setState({ venueError })}
+                searchOptions={{
+                  location: cityLocation,
+                  radius: 1000,
+                  types: ['establishment'],
+                }}
                 type="text"
                 placeholder="Event venue"
               />
@@ -147,8 +183,15 @@ function mapState(state, ownProps) {
   const eventId = ownProps.match.params.id
 
   if (eventId && state.events.length) {
+    const eventArr = state.events.filter(evt => evt.id === eventId)
+
+    if (eventArr.length === 0 && ownProps.match.url.includes('/manage/')) {
+      ownProps.history.replace('/events/')
+      return
+    }
+
     return {
-      initialValues: state.events.filter(evt => evt.id === eventId)[0],
+      initialValues: eventArr[0],
     }
   }
 

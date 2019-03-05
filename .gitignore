@@ -34,3 +34,4 @@ _redirects
 .netlify
 /dist
 /temp
+/src/features/temp
