@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import { Loader } from 'semantic-ui-react'
 
 import EventListItem from './EventListItem'
 
@@ -22,11 +21,7 @@ class EventList extends Component {
       ))
     }
 
-    return (
-      <Loader active inline="centered">
-        Loading
-      </Loader>
-    )
+    return null
   }
 
   render() {

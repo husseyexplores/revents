@@ -5,6 +5,7 @@ import { Grid } from 'semantic-ui-react'
 
 import { deleteEvent } from '../eventActions'
 
+import Spinner from '../../../app/common/components/loaders/Spinner'
 import EventList from '../EventList/EventList'
 
 class EventDashBoard extends Component {
@@ -18,7 +19,11 @@ class EventDashBoard extends Component {
   }
 
   render() {
-    const { events } = this.props
+    const { events, isLoading } = this.props
+
+    if (isLoading) {
+      return <Spinner content="Loading..." size="big" dim />
+    }
 
     return (
       <Grid>
@@ -39,6 +44,7 @@ class EventDashBoard extends Component {
 EventDashBoard.propTypes = {
   events: PropTypes.array,
   deleteEvent: PropTypes.func.isRequired,
+  isLoading: PropTypes.bool,
 }
 
 EventDashBoard.defaultProps = {}
@@ -46,6 +52,7 @@ EventDashBoard.defaultProps = {}
 function mapState(state) {
   return {
     events: state.events,
+    isLoading: state.async.isLoading,
   }
 }
 

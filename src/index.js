@@ -8,10 +8,12 @@ import { configureStore } from './app/store'
 import './index.css'
 import { ScrollToTop } from './app/common/components/'
 import App from './app/layout/App'
+import { fetchEvents } from './features/event/eventActions'
 
 import * as serviceWorker from './serviceWorker'
 
 const store = configureStore()
+store.dispatch(fetchEvents())
 
 const rootEl = document.getElementById('root')
 
