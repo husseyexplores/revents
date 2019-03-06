@@ -1,33 +1,33 @@
 import React, { Component } from 'react'
-// import PropTypes from 'prop-types'
+import PropTypes from 'prop-types'
+import { connect } from 'react-redux'
 import { NavLink, Link, withRouter } from 'react-router-dom'
 import { Menu, Container, Button } from 'semantic-ui-react'
 
 import SignedInMenu from '../Menus/SignedInMenu'
 import SignedOutMenu from '../Menus/SignedOutMenu'
 
+import { openModal } from '../../modals/modalActions'
+import { logoutUser } from '../../auth/authActions'
+
 class NavBar extends Component {
-  state = {
-    authenticated: false,
+  handleSignIn = () => {
+    this.props.openLoginModal()
   }
 
-  handleSignIn = () => {
-    this.setState({
-      authenticated: true,
-    })
+  handleRegister = () => {
+    this.props.openRegisterModal()
   }
 
   handleSignOut = () => {
-    this.setState({
-      authenticated: false,
-    })
-
-    const { history } = this.props
-    history.push('/events')
+    const { logoutUser, history } = this.props
+    logoutUser()
+    history.push('/')
   }
 
   render() {
-    const { authenticated } = this.state
+    const { auth } = this.props
+    const { authenticated, currentUser } = auth
 
     return (
       <Menu inverted fixed="top">
@@ -53,9 +53,15 @@ class NavBar extends Component {
             </Menu.Item>
           )}
           {authenticated ? (
-            <SignedInMenu handleSignOut={this.handleSignOut} />
+            <SignedInMenu
+              handleSignOut={this.handleSignOut}
+              currentUser={currentUser}
+            />
           ) : (
-            <SignedOutMenu handleSignIn={this.handleSignIn} />
+            <SignedOutMenu
+              handleSignIn={this.handleSignIn}
+              handleRegister={this.handleRegister}
+            />
           )}
         </Container>
       </Menu>
@@ -63,8 +69,33 @@ class NavBar extends Component {
   }
 }
 
-NavBar.propTypes = {}
+NavBar.propTypes = {
+  history: PropTypes.object.isRequired,
+  openLoginModal: PropTypes.func.isRequired,
+  openRegisterModal: PropTypes.func.isRequired,
+  auth: PropTypes.object.isRequired,
+  logoutUser: PropTypes.func.isRequired,
+}
 
 NavBar.defaultProps = {}
 
-export default withRouter(NavBar)
+function mapState(state) {
+  return {
+    auth: state.auth,
+  }
+}
+
+function mapDispatch(dispatch) {
+  return {
+    openLoginModal: props => dispatch(openModal('LoginModal', props)),
+    openRegisterModal: props => dispatch(openModal('LoginModal', props)),
+    logoutUser: () => dispatch(logoutUser()),
+  }
+}
+
+const navWithRedux = connect(
+  mapState,
+  mapDispatch
+)(NavBar)
+
+export default withRouter(navWithRedux)
