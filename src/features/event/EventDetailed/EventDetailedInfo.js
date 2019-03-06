@@ -32,7 +32,7 @@ class EventDetailedInfo extends Component {
         <Segment attached>
           <Grid verticalAlign="middle">
             <Grid.Column width={1}>
-              <Icon name="calendar" size="large" color="teal" />
+              <Icon name="calendar alternate" size="large" color="teal" />
             </Grid.Column>
             <Grid.Column width={15}>
               <span>{date}</span>
@@ -42,7 +42,7 @@ class EventDetailedInfo extends Component {
         <Segment attached>
           <Grid verticalAlign="middle">
             <Grid.Column width={1}>
-              <Icon name="marker" size="large" color="teal" />
+              <Icon name="map marker alternate" size="large" color="teal" />
             </Grid.Column>
             <Grid.Column width={11}>
               <span>{venue}</span>

@@ -25,21 +25,22 @@ function EventDetailedPage({ event }) {
     venueLatLng: { lat, lng },
   } = event
 
-  const formattedDate = formatDate(date, 'YYYY-MM-DD HH:mm')
-
+  const formattedDate = formatDate(date, 'dddd, Do MMMM')
+  const formattedTime = formatDate(date, 'h:mm A')
+  const formattedDateTime = `${formattedDate} at ${formattedTime}`
   return (
     <Grid>
       <Grid.Column width={10}>
         <EventDetailedHeader
           title={title}
           category={category}
-          date={formattedDate}
+          date={formattedDateTime}
           hostedBy={hostedBy}
           id={id}
         />
         <EventDetailedInfo
           description={description}
-          date={formattedDate}
+          date={formattedDateTime}
           venue={venue}
           lat={lat}
           lng={lng}

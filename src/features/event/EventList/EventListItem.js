@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
+import formatDate from 'date-fns/format'
 import { Segment, Item, Icon, List, Button } from 'semantic-ui-react'
 
 import EventListAttendee from './EventListAttendee'
@@ -30,6 +31,9 @@ class EventListItem extends Component {
       // attendees,
     } = event
 
+    const formattedDate = formatDate(date, 'dddd, Do MMMM')
+    const formattedTime = formatDate(date, 'HH:mm')
+
     return (
       <Segment.Group>
         <Segment>
@@ -47,7 +51,8 @@ class EventListItem extends Component {
         </Segment>
         <Segment>
           <span>
-            <Icon name="clock outline" /> {date} |
+            <Icon name="clock outline" />{' '}
+            {`${formattedDate} at ${formattedTime}`} |
             <Icon name="map marker alternate" /> {venue}
           </span>
         </Segment>

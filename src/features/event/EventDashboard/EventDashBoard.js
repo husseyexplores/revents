@@ -6,7 +6,8 @@ import { Grid } from 'semantic-ui-react'
 import { deleteEvent } from '../eventActions'
 
 import Spinner from '../../../app/common/components/loaders/Spinner'
-import EventList from '../EventList/EventList'
+import EventList from '../EventList/'
+import EventActicity from '../EventActivity'
 
 class EventDashBoard extends Component {
   handleDeleteEvent = eventId => () => {
@@ -34,7 +35,7 @@ class EventDashBoard extends Component {
           />
         </Grid.Column>
         <Grid.Column width={6}>
-          <h2>Event Activity</h2>
+          <EventActicity />
         </Grid.Column>
       </Grid>
     )
