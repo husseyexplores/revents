@@ -10,12 +10,15 @@ import EventForm from '../../features/event/EventForm/'
 import PeopleDashboard from '../../features/user/PeopleDashboard/'
 import UserDetailedPage from '../../features/user/UserDetailed/'
 import { SettingsDashboard } from '../../features/user/Settings/'
+import ModalManager from '../../features/modals/Modal/ModalManager'
+
 import TemporaryComponent from '../../features/temp/'
 
 class App extends Component {
   render() {
     return (
       <>
+        <ModalManager />
         <Switch>
           <Route path="/" exact component={HomePage} />
         </Switch>
