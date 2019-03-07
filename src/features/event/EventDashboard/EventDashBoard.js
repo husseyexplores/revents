@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
+import { firestoreConnect, firebaseConnect } from 'react-redux-firebase'
 import { Grid } from 'semantic-ui-react'
 
 import { deleteEvent } from '../eventActions'
@@ -61,7 +62,13 @@ const mapDispatch = {
   deleteEvent,
 }
 
+const withFirestore = firestoreConnect([{ collection: 'events' }])(
+  EventDashBoard
+)
+
+const withFirebase = firebaseConnect()(withFirestore)
+
 export default connect(
   mapState,
   mapDispatch
-)(EventDashBoard)
+)(withFirebase)
