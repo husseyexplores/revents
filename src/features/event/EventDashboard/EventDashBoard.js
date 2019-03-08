@@ -22,7 +22,6 @@ class EventDashBoard extends Component {
 
   render() {
     const { events, isLoading } = this.props
-
     if (isLoading) {
       return <Spinner content="Loading..." size="big" dim />
     }
@@ -53,7 +52,7 @@ EventDashBoard.defaultProps = {}
 
 function mapState(state) {
   return {
-    events: state.events,
+    events: state.firestore.ordered.events,
     isLoading: state.async.isLoading,
   }
 }

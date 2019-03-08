@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
+import { withFirebase } from 'react-redux-firebase'
 import { NavLink, Link, withRouter } from 'react-router-dom'
 import { Menu, Container, Button } from 'semantic-ui-react'
 
@@ -27,7 +28,8 @@ class NavBar extends Component {
 
   render() {
     const { auth } = this.props
-    const { authenticated, currentUser } = auth
+    const { currentUser } = auth
+    const authenticated = auth.isLoaded && !auth.isEmpty
 
     return (
       <Menu inverted fixed="top">
@@ -53,10 +55,7 @@ class NavBar extends Component {
             </Menu.Item>
           )}
           {authenticated ? (
-            <SignedInMenu
-              handleSignOut={this.handleSignOut}
-              currentUser={currentUser}
-            />
+            <SignedInMenu handleSignOut={this.handleSignOut} auth={auth} />
           ) : (
             <SignedOutMenu
               handleSignIn={this.handleSignIn}
@@ -81,7 +80,7 @@ NavBar.defaultProps = {}
 
 function mapState(state) {
   return {
-    auth: state.auth,
+    auth: state.firebase.auth,
   }
 }
 
@@ -98,4 +97,4 @@ const navWithRedux = connect(
   mapDispatch
 )(NavBar)
 
-export default withRouter(navWithRedux)
+export default withRouter(withFirebase(navWithRedux))

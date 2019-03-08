@@ -9,12 +9,12 @@ import EventListAttendee from './EventListAttendee'
 class EventListItem extends Component {
   renderAttendees() {
     const { event } = this.props
-    if (event.attendees && event.attendees.length) {
-      return event.attendees.map(attendee => (
-        <EventListAttendee key={attendee.id} {...attendee} />
-      ))
-    }
-    return null
+    // if (Array.isArray(event.attendees) && event.attendees.length) {
+    return Object.values(event.attendees).map((attendee, idx) => (
+      <EventListAttendee key={idx} {...attendee} />
+    ))
+    //  }
+    // return null
   }
 
   render() {
@@ -31,8 +31,8 @@ class EventListItem extends Component {
       // attendees,
     } = event
 
-    const formattedDate = formatDate(date, 'dddd, Do MMMM')
-    const formattedTime = formatDate(date, 'HH:mm')
+    const formattedDate = formatDate(date.toDate(), 'dddd, Do MMMM')
+    const formattedTime = formatDate(date.toDate(), 'HH:mm')
 
     return (
       <Segment.Group>
