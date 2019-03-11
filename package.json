@@ -29,7 +29,7 @@
     "react-scripts": "2.1.5",
     "redux": "^4.0.1",
     "redux-auth-wrapper": "^2.1.0",
-    "redux-firestore": "^0.6.0-beta",
+    "redux-firestore": "^0.7.1",
     "redux-form": "^8.1.0",
     "redux-thunk": "^2.3.0",
     "revalidate": "^1.2.0",
