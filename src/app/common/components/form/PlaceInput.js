@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import { Form, Label, List, Loader } from 'semantic-ui-react'
+import { Form, Message, List, Loader } from 'semantic-ui-react'
 import Script from 'react-load-script'
 import PlacesAutocomplete, {
   geocodeByAddress,
@@ -9,7 +9,7 @@ import PlacesAutocomplete, {
 
 import { googleMapsSecrets } from '../../../../secret'
 
-class PlaceInput extends React.Component {
+class PlaceInput extends Component {
   state = {
     isGoogleScriptsLoaded: false,
     isLoading: true,
@@ -122,11 +122,7 @@ class PlaceInput extends React.Component {
             </>
           )}
         </PlacesAutocomplete>
-        {touched && !!error && (
-          <Label basic color="red">
-            {error}
-          </Label>
-        )}
+        {touched && !!error && <Message error content={error} />}
       </Form.Field>
     )
   }

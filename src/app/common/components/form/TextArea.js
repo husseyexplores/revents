@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Form, Label } from 'semantic-ui-react'
+import { Form, Message } from 'semantic-ui-react'
 
 function TextArea({
   input,
@@ -13,11 +13,7 @@ function TextArea({
   return (
     <Form.Field error={touched && !!error} width={width}>
       <textarea {...input} placeholder={placeholder} type={type} rows={rows} />
-      {touched && !!error && (
-        <Label basic color="red">
-          {error}
-        </Label>
-      )}
+      {touched && !!error && <Message error content={error} />}
     </Form.Field>
   )
 }

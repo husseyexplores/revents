@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Form, Label, Select } from 'semantic-ui-react'
+import { Form, Message, Select } from 'semantic-ui-react'
 
 function SelectInput({
   input,
@@ -18,11 +18,7 @@ function SelectInput({
         options={options}
         multiple={multiple}
       />
-      {touched && !!error && (
-        <Label basic color="red">
-          {error}
-        </Label>
-      )}
+      {touched && !!error && <Message error content={error} />}
     </Form.Field>
   )
 }

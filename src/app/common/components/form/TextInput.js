@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Form, Label } from 'semantic-ui-react'
+import { Form, Message } from 'semantic-ui-react'
 
 function TextInput({
   input,
@@ -12,11 +12,7 @@ function TextInput({
   return (
     <Form.Field error={touched && !!error} width={width}>
       <input {...input} placeholder={placeholder} type={type} />
-      {touched && !!error && (
-        <Label basic color="red">
-          {error}
-        </Label>
-      )}
+      {touched && !!error && <Message error content={error} />}
     </Form.Field>
   )
 }
