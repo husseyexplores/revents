@@ -92,7 +92,7 @@ class EventForm extends Component {
         <Grid.Column width={10}>
           <Segment>
             <Header sub color="teal" content="Event Details" />
-            <Form onSubmit={handleSubmit(this.onSubmit)}>
+            <Form onSubmit={handleSubmit(this.onSubmit)} error>
               <Field
                 name="title"
                 component={TextInput}
