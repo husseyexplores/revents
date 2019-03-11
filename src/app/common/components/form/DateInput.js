@@ -11,12 +11,22 @@ function DateInput({
   meta: { touched, error },
   ...restProps
 }) {
+  let formattedDate = null
+
+  if (value) {
+    try {
+      formattedDate = value.toDate()
+    } catch (e) {
+      formattedDate = new Date(value)
+    }
+  }
+
   return (
     <Form.Field error={touched && !!error} width={width}>
       <DatePicker
         {...restProps}
         placeholderText={placeholder}
-        selected={value ? new Date(value) : null}
+        selected={formattedDate}
         onChange={onChange}
         {...restInput}
         onKeyDown={e => e.preventDefault()}
