@@ -14,10 +14,6 @@ class EventDashBoard extends Component {
   handleDeleteEvent = eventId => () => {
     const { deleteEvent } = this.props
     deleteEvent(eventId)
-
-    this.setState({
-      isFormOpen: false,
-    })
   }
 
   render() {

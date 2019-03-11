@@ -1,14 +1,37 @@
 import React from 'react'
-// import PropTypes from 'prop-types'
+import PropTypes from 'prop-types'
+import { compose } from 'redux'
+import {
+  combineValidators,
+  composeValidators,
+  hasLengthGreaterThan,
+  isRequired,
+} from 'revalidate'
+import { withFirestore } from 'react-redux-firebase'
 import { connect } from 'react-redux'
-import { Form, Segment, Button } from 'semantic-ui-react'
+import { Form, Segment, Button, Divider, Message } from 'semantic-ui-react'
 import { Field, reduxForm } from 'redux-form'
-import { TextInput } from '../../../app/common/components/form/'
 
-const RegisterForm = () => {
+import { TextInput } from '../../../app/common/components/form/'
+import SocialLogin from '../SocialLogin'
+
+import { registerUser, socialLogin } from '../authActions'
+
+function RegisterForm({
+  handleSubmit,
+  error,
+  invalid,
+  submitting,
+  registerUser,
+  socialLogin,
+  firestore,
+}) {
+  const onSubmit = formValues => {
+    return registerUser(formValues, firestore)
+  }
   return (
     <div>
-      <Form size="large">
+      <Form size="large" onSubmit={handleSubmit(onSubmit)} error>
         <Segment>
           <Field
             name="displayName"
@@ -28,18 +51,61 @@ const RegisterForm = () => {
             component={TextInput}
             placeholder="Password"
           />
-          <Button fluid size="large" color="teal">
+
+          {error && <Message error content={error} />}
+          <Button
+            loading={submitting}
+            disabled={invalid || submitting || !!error}
+            fluid
+            size="large"
+            color="teal"
+          >
             Register
           </Button>
+
+          <Divider horizontal>OR</Divider>
+          <SocialLogin socialLogin={socialLogin} />
         </Segment>
       </Form>
     </div>
   )
 }
 
-const withReduxForm = reduxForm({
-  form: 'registerForm',
-  enableReinitialize: true,
-})(RegisterForm)
+RegisterForm.propTypes = {
+  handleSubmit: PropTypes.func.isRequired,
+  registerUser: PropTypes.func.isRequired,
+  socialLogin: PropTypes.func.isRequired,
+  firestore: PropTypes.object,
+  error: PropTypes.string,
+  invalid: PropTypes.bool,
+  submitting: PropTypes.bool,
+}
 
-export default connect()(withReduxForm)
+const mapDispatch = {
+  registerUser,
+  socialLogin,
+}
+
+const validate = combineValidators({
+  displayName: isRequired('Display name'),
+  email: isRequired('Email'),
+  password: composeValidators(
+    isRequired({ message: 'Password is required' }),
+    hasLengthGreaterThan(8)({
+      message: 'Password should be at least 8 characters',
+    })
+  )(),
+})
+
+export default compose(
+  withFirestore,
+  reduxForm({
+    form: 'registerForm',
+    enableReinitialize: true,
+    validate,
+  }),
+  connect(
+    null,
+    mapDispatch
+  )
+)(RegisterForm)

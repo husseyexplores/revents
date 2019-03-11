@@ -92,7 +92,10 @@ EventListItem.propTypes = {
     venue: PropTypes.string,
     hostedBy: PropTypes.string,
     hostPhotoURL: PropTypes.string,
-    attendees: PropTypes.arrayOf(PropTypes.object),
+    attendees: PropTypes.oneOfType([
+      PropTypes.arrayOf(PropTypes.object),
+      PropTypes.object,
+    ]),
   }).isRequired,
   handleDeleteEvent: PropTypes.func,
 }

@@ -22,6 +22,7 @@ const rrfConfig = {
   userProfile: 'users',
   attachAuthIsReady: true, // attaches auth is ready promise to store
   useFirestoreForProfile: true,
+  updateProfileOnLogin: false,
 }
 
 const rrfProps = {

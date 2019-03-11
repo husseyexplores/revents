@@ -1,15 +1,25 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { Form, Segment, Button, Label } from 'semantic-ui-react'
+import { combineValidators, isRequired } from 'revalidate'
+import { Form, Segment, Button, Divider, Message } from 'semantic-ui-react'
 import { Field, reduxForm } from 'redux-form'
+
 import { TextInput } from '../../../app/common/components/form/'
+import SocialLogin from '../SocialLogin'
 
-import { loginUser } from '../../auth/authActions'
+import { loginUser, socialLogin } from '../../auth/authActions'
 
-const LoginForm = ({ loginUser, handleSubmit, error }) => {
+const LoginForm = ({
+  loginUser,
+  handleSubmit,
+  socialLogin,
+  error,
+  invalid,
+  submitting,
+}) => {
   return (
-    <Form size="large" onSubmit={handleSubmit(loginUser)}>
+    <Form size="large" onSubmit={handleSubmit(loginUser)} error>
       <Segment>
         <Field
           name="email"
@@ -23,14 +33,18 @@ const LoginForm = ({ loginUser, handleSubmit, error }) => {
           type="password"
           placeholder="password"
         />
-        {error && (
-          <Label basic color="red">
-            {error}
-          </Label>
-        )}
-        <Button fluid size="large" color="teal">
+        {error && <Message error content={error} />}
+        <Button
+          loading={submitting}
+          disabled={invalid || !!error || submitting}
+          fluid
+          size="large"
+          color="teal"
+        >
           Login
         </Button>
+        <Divider horizontal>OR</Divider>
+        <SocialLogin socialLogin={socialLogin} />
       </Segment>
     </Form>
   )
@@ -38,16 +52,27 @@ const LoginForm = ({ loginUser, handleSubmit, error }) => {
 
 LoginForm.propTypes = {
   loginUser: PropTypes.func.isRequired,
+  socialLogin: PropTypes.func.isRequired,
   handleSubmit: PropTypes.func.isRequired,
+  error: PropTypes.string,
+  invalid: PropTypes.bool,
+  submitting: PropTypes.bool,
 }
+
+const validate = combineValidators({
+  email: isRequired({ message: 'Email is required' }),
+  password: isRequired({ message: 'Password is required' }),
+})
 
 const withReduxForm = reduxForm({
   form: 'loginForm',
   enableReinitialize: true,
+  validate,
 })(LoginForm)
 
 const mapDispatch = {
   loginUser,
+  socialLogin,
 }
 
 export default connect(

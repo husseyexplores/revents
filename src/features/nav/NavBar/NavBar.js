@@ -27,7 +27,7 @@ class NavBar extends Component {
   }
 
   render() {
-    const { auth } = this.props
+    const { auth, profile } = this.props
     const { currentUser } = auth
     const authenticated = auth.isLoaded && !auth.isEmpty
 
@@ -55,7 +55,10 @@ class NavBar extends Component {
             </Menu.Item>
           )}
           {authenticated ? (
-            <SignedInMenu handleSignOut={this.handleSignOut} auth={auth} />
+            <SignedInMenu
+              handleSignOut={this.handleSignOut}
+              profile={profile}
+            />
           ) : (
             <SignedOutMenu
               handleSignIn={this.handleSignIn}
@@ -73,6 +76,7 @@ NavBar.propTypes = {
   openLoginModal: PropTypes.func.isRequired,
   openRegisterModal: PropTypes.func.isRequired,
   auth: PropTypes.object.isRequired,
+  profile: PropTypes.object,
   logoutUser: PropTypes.func.isRequired,
 }
 
@@ -81,13 +85,14 @@ NavBar.defaultProps = {}
 function mapState(state) {
   return {
     auth: state.firebase.auth,
+    profile: state.firebase.profile,
   }
 }
 
 function mapDispatch(dispatch) {
   return {
     openLoginModal: props => dispatch(openModal('LoginModal', props)),
-    openRegisterModal: props => dispatch(openModal('LoginModal', props)),
+    openRegisterModal: props => dispatch(openModal('RegisterModal', props)),
     logoutUser: () => dispatch(logoutUser()),
   }
 }
