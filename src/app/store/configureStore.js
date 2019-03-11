@@ -2,14 +2,13 @@ import { createStore, applyMiddleware } from 'redux'
 import thunk from 'redux-thunk'
 import { composeWithDevTools } from 'redux-devtools-extension'
 // import { getFirebase } from 'react-redux-firebase'
-import { getFirestore } from 'redux-firestore'
 
 import firebase from '../config/firebase'
 
 import rootReducer from '../reducers'
 
 const configureStore = preloadedState => {
-  const middlewares = [thunk.withExtraArgument({ firebase, getFirestore })]
+  const middlewares = [thunk.withExtraArgument({ firebase })]
   const middlewareEnahcer = applyMiddleware(...middlewares)
 
   // not working with redux compose and with reactReduxFirebase `attachAuthIsReady`
