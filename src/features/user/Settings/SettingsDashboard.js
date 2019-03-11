@@ -12,15 +12,40 @@ import PhotosPage from './PhotosPage'
 import AccountPage from './AccountPage'
 
 import { updatePassword } from '../../auth/authActions'
+import { updateProfile } from '../../user/userActions'
 
-function SettingsDashboard({ updatePassword, providerId }) {
+function SettingsDashboard({
+  updatePassword,
+  providerId,
+  user,
+  updateProfile,
+  isAuthLoaded,
+}) {
   return (
     <Grid>
       <Grid.Column width={12}>
         <Switch>
           <Redirect exact from="/settings" to="/settings/basic" />
-          <Route path="/settings/basic" component={BasicPage} />
-          <Route path="/settings/about" component={AboutPage} />
+          <Route
+            path="/settings/basic"
+            render={() => (
+              <BasicPage
+                initialValues={user}
+                updateProfile={updateProfile}
+                isAuthLoaded={isAuthLoaded}
+              />
+            )}
+          />
+          <Route
+            path="/settings/about"
+            render={() => (
+              <AboutPage
+                updateProfile={updateProfile}
+                initialValues={user}
+                isAuthLoaded={isAuthLoaded}
+              />
+            )}
+          />
           <Route path="/settings/photos" component={PhotosPage} />
           <Route
             path="/settings/account"
@@ -28,6 +53,7 @@ function SettingsDashboard({ updatePassword, providerId }) {
               <AccountPage
                 updatePassword={updatePassword}
                 providerId={providerId}
+                isAuthLoaded={isAuthLoaded}
               />
             )}
           />
@@ -42,7 +68,10 @@ function SettingsDashboard({ updatePassword, providerId }) {
 
 SettingsDashboard.propTypes = {
   updatePassword: PropTypes.func.isRequired,
+  updateProfile: PropTypes.func.isRequired,
   providerId: PropTypes.string.isRequired,
+  user: PropTypes.object.isRequired,
+  isAuthLoaded: PropTypes.bool.isRequired,
 }
 
 SettingsDashboard.defaultProps = {}
@@ -52,12 +81,17 @@ function mapState(state) {
     providerId:
       (state.firebase.auth.isLoaded &&
         state.firebase.auth.providerData[0].providerId) ||
-      'LOADING_AUTH',
+      '',
+    user: state.firebase.profile, // firestore document - stored in firebase state
+    isAuthLoaded:
+      (state.firebase.auth.isLoaded && !!state.firebase.profile.displayName) ||
+      false,
   }
 }
 
 const mapDispatch = {
   updatePassword,
+  updateProfile,
 }
 
 export default compose(
