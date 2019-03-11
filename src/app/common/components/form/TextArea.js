@@ -6,13 +6,20 @@ function TextArea({
   input,
   type,
   placeholder,
+  autoFocus,
   width,
   rows,
   meta: { touched, error },
 }) {
   return (
     <Form.Field error={touched && !!error} width={width}>
-      <textarea {...input} placeholder={placeholder} type={type} rows={rows} />
+      <textarea
+        {...input}
+        placeholder={placeholder}
+        type={type}
+        rows={rows}
+        autoFocus={autoFocus}
+      />
       {touched && !!error && <Message error content={error} />}
     </Form.Field>
   )
@@ -27,11 +34,14 @@ TextArea.propTypes = {
   ]),
   type: PropTypes.string,
   placeholder: PropTypes.string,
+  autoFocus: PropTypes.bool,
   width: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   rows: PropTypes.number,
   meta: PropTypes.object,
 }
 
-TextArea.defaultProps = {}
+TextArea.defaultProps = {
+  autoFocus: false,
+}
 
 export default TextArea

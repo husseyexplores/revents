@@ -65,6 +65,7 @@ class PlaceInput extends Component {
     const {
       input: { value, onChange: _, ...restInputProps },
       placeholder,
+      autoFocus,
       searchOptions,
       width,
       disabled,
@@ -86,7 +87,13 @@ class PlaceInput extends Component {
             loading,
           }) => (
             <>
-              <input {...getInputProps({ ...restInputProps, placeholder })} />
+              <input
+                {...getInputProps({
+                  ...restInputProps,
+                  placeholder,
+                  autoFocus,
+                })}
+              />
               <div className="autocomplete-dropdown-container">
                 <List>
                   {loading && <Loader active inline="centered" />}
@@ -162,8 +169,11 @@ PlaceInput.propTypes = {
   onError: PropTypes.func,
   meta: PropTypes.object,
   disabled: PropTypes.bool,
+  autoFocus: PropTypes.bool,
 }
 
-PlaceInput.defaultProps = {}
+PlaceInput.defaultProps = {
+  autoFocus: false,
+}
 
 export default PlaceInput
