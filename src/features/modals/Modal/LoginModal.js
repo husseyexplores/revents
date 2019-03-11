@@ -7,13 +7,16 @@ import LoginForm from '../../auth/Login/LoginForm'
 
 import { closeModal } from '../modalActions'
 
-function LoginModal({ closeModal }) {
+function LoginModal({ closeModal, reauth, ...restProps }) {
+  const title = reauth
+    ? 'Please reauthenticate to Re-vents'
+    : 'Login to Re-vents'
   return (
     <Modal size="mini" open={true} onClose={closeModal}>
-      <Modal.Header>Login to Re-vents</Modal.Header>
+      <Modal.Header>{title}</Modal.Header>
       <Modal.Content>
         <Modal.Description>
-          <LoginForm />
+          <LoginForm reauth={reauth} {...restProps} />
         </Modal.Description>
       </Modal.Content>
     </Modal>
@@ -22,6 +25,7 @@ function LoginModal({ closeModal }) {
 
 LoginModal.propTypes = {
   closeModal: PropTypes.func.isRequired,
+  reauth: PropTypes.bool,
 }
 
 LoginModal.defaultProps = {}

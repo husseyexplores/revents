@@ -2,7 +2,14 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { combineValidators, isRequired } from 'revalidate'
-import { Form, Segment, Button, Divider, Message } from 'semantic-ui-react'
+import {
+  Form,
+  Segment,
+  Button,
+  Divider,
+  Message,
+  Header,
+} from 'semantic-ui-react'
 import { Field, reduxForm } from 'redux-form'
 
 import { TextInput } from '../../../app/common/components/form/'
@@ -17,13 +24,21 @@ const LoginForm = ({
   error,
   invalid,
   submitting,
+  reauth,
 }) => {
   return (
-    <Form size="large" onSubmit={handleSubmit(loginUser)} error>
+    <Form
+      size="large"
+      onSubmit={handleSubmit(loginUser)}
+      error
+      warning={reauth}
+    >
       <Segment>
+        {reauth && <Message warning content="Please confirm your identity" />}
         <Field
           name="email"
           component={TextInput}
+          autoFocus
           type="text"
           placeholder="Email Address"
         />
@@ -57,6 +72,7 @@ LoginForm.propTypes = {
   error: PropTypes.string,
   invalid: PropTypes.bool,
   submitting: PropTypes.bool,
+  reauth: PropTypes.bool,
 }
 
 const validate = combineValidators({

@@ -1,7 +1,7 @@
 import { SubmissionError, reset } from 'redux-form'
 import { toastr } from 'react-redux-toastr'
 import { LOGIN_USER, LOGOUT_USER } from './authConstants'
-import { closeModal } from '../modals/modalActions'
+import { openModal, closeModal } from '../modals/modalActions'
 
 export function loginUser(creds) {
   return async (dispatch, getState, { firebase }) => {
@@ -109,9 +109,12 @@ export function updatePassword(creds) {
     const user = firebase.auth().currentUser
     try {
       await user.updatePassword(creds.newPassword1)
+
       // force blur the form before resettint
       // its causing validation errors if the form is subbmitting via `Enter`
-      document.querySelector('*:focus').blur()
+      document.querySelector('*:focus') &&
+        document.querySelector('*:focus').blur()
+
       await dispatch(reset('account')) // reduxForm reset form
       toastr.success('Success!', 'Your password has been updated')
     } catch (error) {
@@ -119,9 +122,18 @@ export function updatePassword(creds) {
       console.log('Error occured in `updatePassword` action')
       console.log(error)
       /* eslint-enable no-console */
-      throw new SubmissionError({
-        _error: error.message,
-      })
+      if (error.code === 'auth/requires-recent-login') {
+        // Reauth if requires login
+        dispatch(
+          openModal('LoginModal', {
+            reauth: true,
+          })
+        )
+      } else {
+        throw new SubmissionError({
+          _error: error.message,
+        })
+      }
     }
   }
 }
