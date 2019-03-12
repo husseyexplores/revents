@@ -37,9 +37,9 @@ const rootEl = document.getElementById('root')
 function render() {
   ReactDOM.render(
     <Provider store={store}>
-      <BrowserRouter>
-        <ScrollToTop>
-          <ReactReduxFirebaseProvider {...rrfProps}>
+      <ReactReduxFirebaseProvider {...rrfProps}>
+        <BrowserRouter>
+          <ScrollToTop>
             <ReduxToastr
               position="bottom-right"
               transitionIn="fadeIn"
@@ -47,9 +47,9 @@ function render() {
               timeOut={5000}
             />
             <App />
-          </ReactReduxFirebaseProvider>
-        </ScrollToTop>
-      </BrowserRouter>
+          </ScrollToTop>
+        </BrowserRouter>
+      </ReactReduxFirebaseProvider>
     </Provider>,
     rootEl
   )
