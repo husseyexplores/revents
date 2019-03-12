@@ -1,6 +1,8 @@
 import React, { Component } from 'react'
-import { Route, Switch } from 'react-router-dom'
+import PropTypes from 'prop-types'
+import { Route, Switch, withRouter } from 'react-router-dom'
 import { Container } from 'semantic-ui-react'
+import { connect } from 'react-redux'
 
 import NavBar from '../../features/nav/NavBar/'
 import HomePage from '../../features/home/HomePage'
@@ -11,11 +13,18 @@ import PeopleDashboard from '../../features/user/PeopleDashboard/'
 import UserDetailedPage from '../../features/user/UserDetailed/'
 import { SettingsDashboard } from '../../features/user/Settings/'
 import ModalManager from '../../features/modals/Modal/ModalManager'
+import Spinner from '../common/components/loaders/Spinner'
 
 import TemporaryComponent from '../../features/temp/'
 
 class App extends Component {
   render() {
+    const { isAuthLoaded } = this.props
+
+    if (!isAuthLoaded) {
+      return <Spinner size="big" dim content="Loading..." />
+    }
+
     return (
       <>
         <ModalManager />
@@ -48,4 +57,14 @@ class App extends Component {
   }
 }
 
-export default App
+App.propTypes = {
+  isAuthLoaded: PropTypes.bool.isRequired,
+}
+
+function mapState(state) {
+  return {
+    isAuthLoaded: state.firebase.auth.isLoaded || false,
+  }
+}
+
+export default withRouter(connect(mapState)(App))
