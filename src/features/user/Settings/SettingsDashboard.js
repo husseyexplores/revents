@@ -10,6 +10,7 @@ import BasicPage from './BasicPage'
 import AboutPage from './AboutPage'
 import PhotosPage from './PhotosPage'
 import AccountPage from './AccountPage'
+import Spinner from '../../../app/common/components/loaders/Spinner'
 
 import { updatePassword } from '../../auth/authActions'
 import { updateProfile } from '../../user/userActions'
@@ -24,40 +25,34 @@ function SettingsDashboard({
   return (
     <Grid>
       <Grid.Column width={12}>
-        <Switch>
-          <Redirect exact from="/settings" to="/settings/basic" />
-          <Route
-            path="/settings/basic"
-            render={() => (
-              <BasicPage
-                initialValues={user}
-                updateProfile={updateProfile}
-                isAuthLoaded={isAuthLoaded}
-              />
-            )}
-          />
-          <Route
-            path="/settings/about"
-            render={() => (
-              <AboutPage
-                updateProfile={updateProfile}
-                initialValues={user}
-                isAuthLoaded={isAuthLoaded}
-              />
-            )}
-          />
-          <Route path="/settings/photos" component={PhotosPage} />
-          <Route
-            path="/settings/account"
-            render={() => (
-              <AccountPage
-                updatePassword={updatePassword}
-                providerId={providerId}
-                isAuthLoaded={isAuthLoaded}
-              />
-            )}
-          />
-        </Switch>
+        {!isAuthLoaded && <Spinner content="Loading..." size="big" dim />}
+        {isAuthLoaded && (
+          <Switch>
+            <Redirect exact from="/settings" to="/settings/basic" />
+            <Route
+              path="/settings/basic"
+              render={() => (
+                <BasicPage initialValues={user} updateProfile={updateProfile} />
+              )}
+            />
+            <Route
+              path="/settings/about"
+              render={() => (
+                <AboutPage updateProfile={updateProfile} initialValues={user} />
+              )}
+            />
+            <Route path="/settings/photos" component={PhotosPage} />
+            <Route
+              path="/settings/account"
+              render={() => (
+                <AccountPage
+                  updatePassword={updatePassword}
+                  providerId={providerId}
+                />
+              )}
+            />
+          </Switch>
+        )}
       </Grid.Column>
       <Grid.Column width={4}>
         <SettingsNav />

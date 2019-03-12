@@ -19,7 +19,6 @@ import {
   hasLengthGreaterThan,
 } from 'revalidate'
 import { TextInput } from '../../../app/common/components/form'
-import Spinner from '../../../app/common/components/loaders/Spinner'
 
 function AccountPage({
   error,
@@ -28,12 +27,7 @@ function AccountPage({
   handleSubmit,
   updatePassword,
   providerId,
-  isAuthLoaded,
 }) {
-  if (!isAuthLoaded) {
-    return <Spinner content="Loading..." size="big" dim />
-  }
-
   return (
     <Segment>
       <Header dividing size="large" content="Account" />
@@ -109,7 +103,6 @@ AccountPage.propTypes = {
   handleSubmit: PropTypes.func.isRequired,
   updatePassword: PropTypes.func.isRequired,
   providerId: PropTypes.string.isRequired,
-  isAuthLoaded: PropTypes.bool.isRequired,
 }
 
 AccountPage.defaultProps = {}

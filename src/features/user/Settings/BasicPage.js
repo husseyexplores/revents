@@ -10,19 +10,8 @@ import {
   DateInput,
   RadioInput,
 } from '../../../app/common/components/form'
-import Spinner from '../../../app/common/components/loaders/Spinner'
 
-function BasicPage({
-  pristine,
-  submitting,
-  handleSubmit,
-  updateProfile,
-  isAuthLoaded,
-}) {
-  if (!isAuthLoaded) {
-    return <Spinner content="Loading..." size="big" dim />
-  }
-
+function BasicPage({ pristine, submitting, handleSubmit, updateProfile }) {
   return (
     <Segment>
       <Header dividing size="large" content="Basics" />
@@ -92,7 +81,6 @@ BasicPage.propTypes = {
   handleSubmit: PropTypes.func.isRequired,
   pristine: PropTypes.bool,
   submitting: PropTypes.bool,
-  isAuthLoaded: PropTypes.bool.isRequired,
 }
 
 export default reduxForm({

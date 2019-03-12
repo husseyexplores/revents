@@ -10,7 +10,6 @@ import {
   PlaceInput,
   RadioInput,
 } from '../../../app/common/components/form'
-import Spinner from '../../../app/common/components/loaders/Spinner'
 
 const interests = [
   { key: 'drinks', text: 'Drinks', value: 'drinks' },
@@ -21,16 +20,7 @@ const interests = [
   { key: 'travel', text: 'Travel', value: 'travel' },
 ]
 
-function AboutPage({
-  pristine,
-  submitting,
-  handleSubmit,
-  updateProfile,
-  isAuthLoaded,
-}) {
-  if (!isAuthLoaded) {
-    return <Spinner content="Loading..." size="big" dim />
-  }
+function AboutPage({ pristine, submitting, handleSubmit, updateProfile }) {
   return (
     <Segment>
       <Header dividing size="large" content="About Me" />
