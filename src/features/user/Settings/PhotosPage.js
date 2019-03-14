@@ -3,7 +3,6 @@ import PropTypes from 'prop-types'
 import { compose } from 'redux'
 import { connect } from 'react-redux'
 import { firestoreConnect } from 'react-redux-firebase'
-import { toastr } from 'react-redux-toastr'
 import { useDropzone } from 'react-dropzone'
 import Cropper from 'react-cropper'
 import 'cropperjs/dist/cropper.css'
@@ -115,22 +114,14 @@ function PhotosPage({
     try {
       await uploadProfileImage(image)
       cancelCrop()
-
-      toastr.success('Success!', 'Photo has been uploaded')
-    } catch (error) {
-      toastr.error('Oops', error.message)
-    }
+    } catch (error) {} // eslint-disable-line no-empty
   }
 
   function handlePhotoDelete(photo) {
     return async () => {
       try {
         await deletePhoto(photo)
-
-        toastr.success('Success!', 'Photo has been deleted')
-      } catch (error) {
-        toastr.error('Oops', error.message)
-      }
+      } catch (error) {} // eslint-disable-line no-empty
     }
   }
 
@@ -138,10 +129,7 @@ function PhotosPage({
     return async () => {
       try {
         await setMainPhoto(photoUrl)
-        toastr.success('Success!', 'Profile photo has been updated')
-      } catch (error) {
-        toastr.error('Oops', error.message)
-      }
+      } catch (error) {} // eslint-disable-line no-empty
     }
   }
 

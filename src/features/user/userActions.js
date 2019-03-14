@@ -8,11 +8,14 @@ import {
   asyncActionError,
 } from '../async/asyncActions'
 import { FETCH_EVENTS_UP } from '../event/eventConstants'
+import { firestoreErrMsg } from '../../app/common/util/helpers'
 
 export function updateProfile(rawUser) {
   return async (dispatch, getState, { firebase }) => {
     const { createdAt, isLoaded, isEmpty, ...user } = rawUser // eslint-disable-line no-unused-vars
-    if (user.dateOfBirth) {
+    if (user.dateOfBirth.constructor.name === 'Timestamp') {
+      user.dateOfBirth = user.dateOfBirth.toDate()
+    } else {
       user.dateOfBirth = new Date(user.dateOfBirth)
     }
 
@@ -24,7 +27,12 @@ export function updateProfile(rawUser) {
     } catch (error) {
       /* eslint-disable no-console */
       console.log('Error occured in `updateProfile` action')
-      console.log(error)
+      console.log({ error })
+      const errMsg = firestoreErrMsg(error, {
+        fallback: 'Some problem occured. Please try again',
+        feedback: 'Please try again',
+      })
+      toastr.error('Oops', errMsg)
       /* eslint-enable no-console */
     }
   }
@@ -86,12 +94,16 @@ export function uploadProfileImage(file) {
         }
       )
       dispatch(asyncActionFinish())
+      toastr.success('Success', 'Photo has been uploaded')
     } catch (error) {
       dispatch(asyncActionError())
       /* eslint-disable no-console */
       console.log('Error occured in `uploadProfileImage` action')
-      console.log(error)
-      throw new Error('Problem uploading photo')
+      console.log({ error })
+      const errMsg = firestoreErrMsg(error, {
+        fallback: 'Problem uploading photo. Please try again.',
+      })
+      toastr.error('Oops', errMsg)
       /* eslint-enable no-console */
     }
   }
@@ -113,11 +125,12 @@ export function deletePhoto(photo) {
         subcollections: [{ collection: 'photos', doc: photo.id }],
       })
       dispatch(asyncActionFinish())
+      toastr.success('Success!', 'Photo has been deleted')
     } catch (error) {
       dispatch(asyncActionError())
       /* eslint-disable no-console */
       console.log('Error occured in `deletePhoto` action')
-      console.log(error)
+      console.log({ error })
       throw new Error('Problem deleting the photo. Please try again.')
       /* eslint-enable no-console */
     }
@@ -179,12 +192,17 @@ export function setMainPhoto(photoURL) {
       //   photoURL,
       // })
       dispatch(asyncActionFinish())
+      toastr.success('Success!', 'Photo has been uploaded')
     } catch (error) {
       dispatch(asyncActionError())
       /* eslint-disable no-console */
       console.log('Error occured in `setMainPhoto` action')
-      console.log(error)
-      throw new Error('Problem setting the main photo. Please try again.')
+      console.log({ error })
+
+      const errMsg = firestoreErrMsg(error, {
+        fallback: 'Problem signing up to event. Please try again',
+      })
+      toastr.error('Oops', errMsg)
       /* eslint-enable no-console */
     }
   }
@@ -232,8 +250,12 @@ export function goingToEvent(event) {
       dispatch(asyncActionError())
       /* eslint-disable no-console */
       console.log('Error occured in `goingToEvent` action')
-      console.log(error)
-      toastr.error('Oops!', 'Problem signing up to event. Please try again')
+      console.log({ error })
+
+      const errMsg = firestoreErrMsg(error, {
+        fallback: 'Problem signing up to event. Please try again',
+      })
+      toastr.error('Oops!', errMsg)
       /* eslint-enable no-console */
     }
   }
@@ -264,7 +286,7 @@ export function cancelGoingToEvent(event) {
       dispatch(asyncActionError())
       /* eslint-disable no-console */
       console.log('Error occured in `cancelGoingToEvent` action')
-      console.log(error)
+      console.log({ error })
       toastr.error('Oops!', 'Something went wrong')
       /* eslint-enable no-console */
     }
@@ -317,7 +339,7 @@ export function getUserEvents(userUid, activeTab) {
       dispatch(asyncActionError())
       /* eslint-disable no-console */
       console.log('Error occured in `getUserEvents` action')
-      console.log(error)
+      console.log({ error })
       /* eslint-enable no-console */
     }
   }
@@ -351,7 +373,7 @@ export function followUser(userToFollowId) {
     } catch (error) {
       toastr.error('Oops!', 'Some error occurred')
       console.log('Error occured in `followUser` action')
-      console.log(error)
+      console.log({ error })
     }
   }
 }
@@ -378,7 +400,7 @@ export function unFollowUser(userToUnfollowId) {
     } catch (error) {
       toastr.error('Oops!', 'Some error occurred')
       console.log('Error occured in `unFollowUser` action')
-      console.log(error)
+      console.log({ error })
     }
   }
 }

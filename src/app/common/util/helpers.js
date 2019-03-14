@@ -27,7 +27,7 @@ export function objectToArray(object) {
   }
 }
 
-export const createDataTree = dataset => {
+export function createDataTree(dataset) {
   // `dataset` will be a flat array as in our firebase comments
   const hashTable = Object.create(null)
   dataset.forEach(a => (hashTable[a.id] = { ...a, childNodes: [] }))
@@ -37,4 +37,31 @@ export const createDataTree = dataset => {
     else dataTree.push(hashTable[a.id])
   })
   return dataTree
+}
+
+/**
+ *
+ * @param {Object} e - error message
+ * @param {{fallback: 'string', feedback: 'string', onlyCustom: Boolean}} customizeResponse - Object to customize error response
+ */
+export function firestoreErrMsg(
+  e,
+  { fallback = 'Something went wrong', feedback, onlyCustom = false } = {}
+) {
+  const errMap = {
+    unauthenticated: 'Please sign-in to perform this action',
+    'permission-denied': 'Permission denied',
+    'not-found': 'Resource not found',
+    cancelled: 'Operation cancelled',
+    'deadline-exceeded': 'Server timeout. Please try again',
+    aborted: 'Operation interupted. Please try again',
+    unavailable:
+      'Sorry! This operation in unavailable. Please try again later.',
+  }
+
+  if (!onlyCustom && e.code && errMap.hasOwnProperty(e.code)) {
+    return feedback ? errMap[e.code] + '. ' + feedback : errMap[e.code]
+  }
+
+  return fallback
 }

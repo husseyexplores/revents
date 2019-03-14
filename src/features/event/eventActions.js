@@ -11,6 +11,7 @@ import {
   asyncActionFinish,
   asyncActionError,
 } from '../async/asyncActions'
+import { firestoreErrMsg } from '../../app/common/util/helpers'
 
 export function createEvent(event) {
   return async (dispatch, getState, { firebase }) => {
@@ -44,7 +45,7 @@ export function createEvent(event) {
       toastr.success('Sucess!', 'Event has been created')
     } catch (error) {
       dispatch(asyncActionError())
-      console.log(error) // eslint-disable-line no-console
+      console.log({ error }) // eslint-disable-line no-console
       toastr.error('Oops!', 'Something went wrong')
     }
   }
@@ -90,11 +91,15 @@ export function updateEvent(event) {
       }
 
       dispatch(asyncActionFinish())
-      toastr.success('Sucess!', 'Event has been updated')
+      toastr.success('Success!', 'Event has been updated')
     } catch (error) {
       dispatch(asyncActionError())
-      console.log(error) // eslint-disable-line no-console
-      toastr.error('Oops!', 'Something went wrong')
+      console.log({ error }) // eslint-disable-line no-console
+
+      const errMsg = firestoreErrMsg(error, {
+        fallback: 'Problem update event. Please try again',
+      })
+      toastr.error('Oops!', errMsg)
     }
   }
 }
@@ -104,18 +109,21 @@ export function eventCancelToggle(cancelled, eventId) {
     const message = cancelled
       ? 'Are you sure you want to cancel the event?'
       : 'Are you sure you want to Reactivate the event?'
-    try {
-      toastr.confirm(message, {
-        onOk: () => {
-          firestore.update(`events/${eventId}`, {
-            cancelled,
+
+    toastr.confirm(message, {
+      onOk: async () => {
+        try {
+          await firestore.update(`events/${eventId}`, { cancelled })
+          const msg = cancelled ? 'Event cancelled' : 'Event reactivated'
+          toastr.success('Success!', msg)
+        } catch (error) {
+          const errMsg = firestoreErrMsg(error, {
+            fallback: 'Some problem occured. Please try again',
           })
-        },
-      })
-    } catch (error) {
-      console.log(error) // eslint-disable-line no-console
-      toastr.error('Oops!', 'Something went wrong')
-    }
+          toastr.error('Oops!', errMsg)
+        }
+      },
+    })
   }
 }
 
@@ -173,7 +181,7 @@ export function getEventsForDashboard() {
     } catch (error) {
       dispatch(asyncActionError())
       console.log('Error occured in `getEventsForDashboard` action') // eslint-disable-line no-console
-      console.log(error) // eslint-disable-line no-console
+      console.log({ error }) // eslint-disable-line no-console
       toastr.error('Oops!', 'Something went wrong')
     }
   }
@@ -195,7 +203,7 @@ export function addEventComment(eventId, values, parentId) {
       await firebase.push(`event_chat/${eventId}`, newComment)
     } catch (error) {
       console.log('Error occured in `addEventComment` action') // eslint-disable-line no-console
-      console.log(error) // eslint-disable-line no-console
+      console.log({ error }) // eslint-disable-line no-console
       toastr.error('Oops!', 'Problem adding comment')
     }
   }
