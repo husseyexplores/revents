@@ -1,44 +1,57 @@
 import React from 'react'
-// import PropTypes from 'prop-types'
-import { Segment, Menu, Header, Card, Image } from 'semantic-ui-react'
+import PropTypes from 'prop-types'
+import { Link } from 'react-router-dom'
+import { Segment, Menu, Header, Card, Image, Tab } from 'semantic-ui-react'
+import format from 'date-fns/format'
 
-function UserDetailedEvents() {
+function formatDateTime(date) {
+  const formattedDate = format(date, 'dddd, Do MMMM')
+  const formattedTime = format(date, 'h:mm A')
+  return `${formattedDate} at ${formattedTime}`
+}
+
+const panes = [
+  { menuItem: 'All Events', pane: { key: 'allEvents' } },
+  { menuItem: 'Past Events', pane: { key: 'pastEvents' } },
+  { menuItem: 'Future Events', pane: { key: 'futureEvents' } },
+  { menuItem: 'Hosting', pane: { key: 'hosting' } },
+]
+
+function UserDetailedEvents({ events, isEventsLoading, changeTab }) {
   return (
-    <Segment attached>
+    <Segment attached loading={isEventsLoading}>
       <Header icon="calendar" content="Events" />
-      <Menu secondary pointing>
-        <Menu.Item name="All Events" active />
-        <Menu.Item name="Past Events" />
-        <Menu.Item name="Future Events" />
-        <Menu.Item name="Events Hosted" />
-      </Menu>
+      <Tab
+        onTabChange={changeTab}
+        panes={panes}
+        menu={{ secondary: true, pointing: true }}
+      />
+      <br />
 
-      <Card.Group itemsPerRow={5}>
-        <Card>
-          <Image src={'/assets/categoryImages/drinks.jpg'} />
-          <Card.Content>
-            <Card.Header textAlign="center">Event Title</Card.Header>
-            <Card.Meta textAlign="center">
-              28th March 2018 at 10:00 PM
-            </Card.Meta>
-          </Card.Content>
-        </Card>
-
-        <Card>
-          <Image src={'/assets/categoryImages/drinks.jpg'} />
-          <Card.Content>
-            <Card.Header textAlign="center">Event Title</Card.Header>
-            <Card.Meta textAlign="center">
-              28th March 2018 at 10:00 PM
-            </Card.Meta>
-          </Card.Content>
-        </Card>
-      </Card.Group>
+      {events && events.length && (
+        <Card.Group itemsPerRow={5}>
+          {events.map(evt => (
+            <Card key={evt.id} as={Link} to={`/event/${evt.id}`}>
+              <Image src={`/assets/categoryImages/${evt.category}.jpg`} />
+              <Card.Content>
+                <Card.Header textAlign="center">{evt.title}</Card.Header>
+                <Card.Meta textAlign="center">
+                  {formatDateTime(evt.date)}
+                </Card.Meta>
+              </Card.Content>
+            </Card>
+          ))}
+        </Card.Group>
+      )}
     </Segment>
   )
 }
 
-UserDetailedEvents.propTypes = {}
+UserDetailedEvents.propTypes = {
+  isEventsLoading: PropTypes.bool.isRequired,
+  events: PropTypes.array.isRequired,
+  changeTab: PropTypes.func.isRequired,
+}
 
 UserDetailedEvents.defaultProps = {}
 

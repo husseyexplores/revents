@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { compose } from 'redux'
 import { firestoreConnect, isEmpty } from 'react-redux-firebase'
@@ -12,11 +12,33 @@ import UserDetailedEvents from './UserDetailedEvents'
 import UserDetailedSidebar from './UserDetailedSidebar'
 import Spinner from '../../../app/common/components/loaders/Spinner'
 
+import { getUserEvents } from '../userActions'
 import { userDetailedQuery } from '../userQueries'
 
-function UserDetailedPage({ user, photos, isCurrentUser, isLoading }) {
+function UserDetailedPage({
+  userUid,
+  user,
+  photos,
+  isCurrentUser,
+  isLoading,
+  getUserEvents,
+  isEventsLoading,
+  events,
+}) {
+  // Get user events
+  useEffect(() => {
+    if (user && user.createdAt) {
+      ;(async () => {
+        await getUserEvents(userUid)
+      })()
+    }
+  }, [getUserEvents, user, userUid])
   if (isLoading) {
     return <Spinner size="big" content="Loading..." dim />
+  }
+
+  function changeTab(e, data) {
+    getUserEvents(userUid, data.activeIndex)
   }
 
   return (
@@ -40,7 +62,11 @@ function UserDetailedPage({ user, photos, isCurrentUser, isLoading }) {
       ) : null}
 
       <Grid.Column width={12}>
-        <UserDetailedEvents />
+        <UserDetailedEvents
+          events={events}
+          isEventsLoading={isEventsLoading}
+          changeTab={changeTab}
+        />
       </Grid.Column>
     </Grid>
   )
@@ -48,9 +74,13 @@ function UserDetailedPage({ user, photos, isCurrentUser, isLoading }) {
 
 UserDetailedPage.propTypes = {
   user: PropTypes.object.isRequired,
+  userUid: PropTypes.string.isRequired,
   photos: PropTypes.array,
   isCurrentUser: PropTypes.bool.isRequired,
   isLoading: PropTypes.bool.isRequired,
+  getUserEvents: PropTypes.func.isRequired,
+  events: PropTypes.array.isRequired,
+  isEventsLoading: PropTypes.bool.isRequired,
 }
 
 function mapState(state, props) {
@@ -73,7 +103,15 @@ function mapState(state, props) {
     )
   }
 
+  // convert event date to JS date object (from firestore timestamp)
+  const events = state.events.userProfile.map(evt => ({
+    ...evt,
+    date: evt.date.toDate(),
+  }))
+
   return {
+    events,
+    isEventsLoading: state.async.isLoading,
     isCurrentUser: userUid === state.firebase.auth.uid,
     userUid: userUid,
     user: profile,
@@ -82,8 +120,15 @@ function mapState(state, props) {
   }
 }
 
+const mapDispatch = {
+  getUserEvents,
+}
+
 export default compose(
-  connect(mapState),
+  connect(
+    mapState,
+    mapDispatch
+  ),
   // same as this, point-free style
   // firestoreConnect(props => userDetailedQuery(props))
   firestoreConnect(userDetailedQuery)

@@ -7,6 +7,7 @@ import {
   asyncActionFinish,
   asyncActionError,
 } from '../async/asyncActions'
+import { FETCH_EVENTS_UP } from '../event/eventConstants'
 
 export function updateProfile(rawUser) {
   return async (dispatch, getState, { firebase }) => {
@@ -151,7 +152,7 @@ export function goingToEvent(event) {
     const attendee = {
       host: false,
       going: true,
-      joinDate: Date.now(),
+      joinDate: new Date(Date.now()),
       photoURL: photoURL || null,
       displayName: user.displayName,
     }
@@ -170,7 +171,7 @@ export function goingToEvent(event) {
       const attendeeLookup = {
         eventId: event.id,
         userUid: user.uid,
-        eventDate: event.date,
+        eventDate: new Date(event.date),
         host: false,
       }
       await firestore.set(
@@ -218,6 +219,58 @@ export function cancelGoingToEvent(event) {
       console.log('Error occured in `cancelGoingToEvent` action')
       console.log(error)
       toastr.error('Oops!', 'Something went wrong')
+      /* eslint-enable no-console */
+    }
+  }
+}
+
+export function getUserEvents(userUid, activeTab) {
+  return async (dispatch, getState, { firebase }) => {
+    dispatch(asyncActionStart())
+    const today = new Date(Date.now())
+    const eventsRef = firestore
+      .collection('event_attendee')
+      .where('userUid', '==', userUid)
+
+    let query
+
+    switch (activeTab) {
+      case 1: // past events
+        query = eventsRef
+          .where('eventDate', '<=', today)
+          .orderBy('eventDate', 'desc')
+        break
+      case 2: // future events
+        query = eventsRef.where('eventDate', '>=', today).orderBy('eventDate')
+        break
+      case 3: // host events
+        query = eventsRef.where('host', '==', true).orderBy('eventDate', 'desc')
+        break
+      default:
+        // all events
+        query = eventsRef.orderBy('eventDate', 'desc')
+    }
+
+    try {
+      const querySnap = await query.get()
+      const events = []
+
+      for (let i = 0; i < querySnap.docs.length; i++) {
+        const event = await firestore
+          .collection('events')
+          .doc(querySnap.docs[i].data().eventId)
+          .get()
+        events.push({ ...event.data(), id: event.id })
+      }
+      dispatch({ type: FETCH_EVENTS_UP, payload: { events, noMerge: true } })
+
+      dispatch(asyncActionFinish())
+      return querySnap
+    } catch (error) {
+      dispatch(asyncActionError())
+      /* eslint-disable no-console */
+      console.log('Error occured in `getUserEvents` action')
+      console.log(error)
       /* eslint-enable no-console */
     }
   }
