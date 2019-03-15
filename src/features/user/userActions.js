@@ -1,5 +1,7 @@
 import { toastr } from 'react-redux-toastr'
 import cuid from 'cuid'
+import { firestoreInstance as firestore } from '../../'
+
 import {
   asyncActionStart,
   asyncActionFinish,
@@ -12,8 +14,7 @@ export function updateProfile(rawUser) {
     if (user.dateOfBirth) {
       user.dateOfBirth = new Date(user.dateOfBirth)
     }
-    console.log(rawUser)
-    console.log(user)
+
     try {
       // we're updating out firestore user document
       // this `updateProfile` method is specific to react-redux-firebase lib, not firebase official lib
@@ -32,7 +33,7 @@ export function updateProfile(rawUser) {
  *
  * @param {{file: string, firestore: Object}} namedParameters
  */
-export function uploadProfileImage(file, firestore) {
+export function uploadProfileImage(file) {
   return async (dispatch, getState, { firebase }) => {
     const fileName = cuid()
     const user = firebase.auth().currentUser //sync method
@@ -95,7 +96,7 @@ export function uploadProfileImage(file, firestore) {
   }
 }
 
-export function deletePhoto(photo, firestore) {
+export function deletePhoto(photo) {
   return async (dispatch, getState, { firebase }) => {
     const user = firebase.auth().currentUser //sync method
 
@@ -136,6 +137,87 @@ export function setMainPhoto(photoURL) {
       console.log('Error occured in `setMainPhoto` action')
       console.log(error)
       throw new Error('Problem setting the main photo. Please try again.')
+      /* eslint-enable no-console */
+    }
+  }
+}
+
+export function goingToEvent(event) {
+  return async (dispatch, getState, { firebase }) => {
+    const user = firebase.auth().currentUser
+    // can't rely with AUTH photo, it doesn't update very frequently
+    const photoURL = getState().firebase.profile.photoURL
+
+    const attendee = {
+      host: false,
+      going: true,
+      joinDate: Date.now(),
+      photoURL: photoURL || null,
+      displayName: user.displayName,
+    }
+
+    try {
+      dispatch(asyncActionStart())
+      // create a new attendee entry in this doc:
+      // `events<doc>/[event.id]<doc> => attendees.[user.uid]<object>`
+      await firestore.update(`events/${event.id}`, {
+        // computed key
+        [`attendees.${user.uid}`]: attendee,
+      })
+
+      // add user to events lookup table for queries - no sqql db stuff
+      // `event_attendee<doc>/[event.id]_[user.uid]<doc>` => attendeeLookup
+      const attendeeLookup = {
+        eventId: event.id,
+        userUid: user.uid,
+        eventDate: event.date,
+        host: false,
+      }
+      await firestore.set(
+        `event_attendee/${event.id}_${user.uid}`,
+        attendeeLookup
+      )
+
+      dispatch(asyncActionFinish())
+      toastr.success('Success!', 'You have signed up to the event')
+    } catch (error) {
+      dispatch(asyncActionError())
+      /* eslint-disable no-console */
+      console.log('Error occured in `goingToEvent` action')
+      console.log(error)
+      toastr.error('Oops!', 'Problem signing up to event. Please try again')
+      /* eslint-enable no-console */
+    }
+  }
+}
+
+export function cancelGoingToEvent(event) {
+  return async (dispatch, getState, { firebase }) => {
+    const user = firebase.auth().currentUser
+
+    try {
+      dispatch(asyncActionStart())
+      // create a new attendee entry in this doc:
+      // `events<doc>/[event.id]<doc> => attendees.[user.uid]<object>`
+      await firestore.update(`events/${event.id}`, {
+        // computed key
+        // that's how we delete individual field in firestore
+        [`attendees.${user.uid}`]: firestore.FieldValue.delete(),
+      })
+
+      // add user to events lookup table for queries - no sqql db stuff
+      // `event_attendee<doc>/[event.id]_[user.uid]<doc>` => attendeeLookup
+      // that's how we delete a doc in firestore
+      await firestore.delete(`event_attendee/${event.id}_${user.uid}`)
+
+      dispatch(asyncActionFinish())
+      toastr.success('Success!', 'You have removed yourself from the event')
+    } catch (error) {
+      dispatch(asyncActionError())
+      /* eslint-disable no-console */
+      console.log('Error occured in `cancelGoingToEvent` action')
+      console.log(error)
+      toastr.error('Oops!', 'Something went wrong')
       /* eslint-enable no-console */
     }
   }
