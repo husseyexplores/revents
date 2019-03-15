@@ -11,7 +11,7 @@ export function createNewEvent(user, photoURL, event) {
       [user.uid]: {
         host: true,
         going: true,
-        joinDate: Date.now(),
+        joinDate: new Date(Date.now()),
         photoURL: photoURL || '/assets/uesr.png',
         displayName: user.displayName,
       },
