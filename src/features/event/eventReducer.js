@@ -1,37 +1,48 @@
 import { createReducer } from '../../app/common/util/reducerUtil'
 
 import {
-  CREATE_EVENT,
   UPDATE_EVENT,
-  DELETE_EVENT,
-  FETCH_EVENTS,
+  FETCH_EVENTS_DB,
+  FETCH_EVENTS_UP,
 } from './eventConstants'
 import { isArray } from 'util'
 
-const initalState = []
-
-export function createEventReducer(state, { event }) {
-  return [...state, Object.assign({}, event)]
+const initalState = {
+  dashboard: [],
+  userProfile: [],
 }
 
 export function updateEventReducer(state, { event }) {
-  return state.map(evt =>
+  const updatedEvents = state.dashboard.map(evt =>
     evt.id === event.id ? Object.assign({}, event) : evt
   )
+  return { ...state, dashboard: updatedEvents }
 }
 
-export function deleteEventReducer(state, { eventId }) {
-  return state.filter(evt => evt.id !== eventId)
-}
-
-export function fetchEventsReducer(state, { events }) {
+export function fetchDBEventsReducer(state, { events, noMerge = false }) {
   if (!isArray(events)) return state
-  return [...state, ...events]
+
+  if (noMerge) {
+    return { ...state, dashboard: events }
+  }
+
+  const updatedEvents = [...state.dashboard, ...events]
+  return { ...state, dashboard: updatedEvents }
+}
+
+export function fetchUPEventsReducer(state, { events, noMerge = false }) {
+  if (!isArray(events)) return state
+
+  if (noMerge) {
+    return { ...state, userProfile: events }
+  }
+
+  const updatedEvents = [...state.userProfile, ...events]
+  return { ...state, userProfile: updatedEvents }
 }
 
 export default createReducer(initalState, {
-  [CREATE_EVENT]: createEventReducer,
   [UPDATE_EVENT]: updateEventReducer,
-  [DELETE_EVENT]: deleteEventReducer,
-  [FETCH_EVENTS]: fetchEventsReducer,
+  [FETCH_EVENTS_DB]: fetchDBEventsReducer,
+  [FETCH_EVENTS_UP]: fetchUPEventsReducer,
 })

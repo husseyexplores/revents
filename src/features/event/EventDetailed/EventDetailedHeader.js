@@ -23,7 +23,7 @@ function EventDetailedHeader({
   goingToEvent,
   cancelGoingToEvent,
 }) {
-  const { title, category, date, hostedBy, id } = event
+  const { title, category, formattedDate, hostedBy, id } = event
 
   return (
     <Segment.Group>
@@ -43,7 +43,7 @@ function EventDetailedHeader({
                   content={title}
                   style={{ color: 'white' }}
                 />
-                <p>{date}</p>
+                <p>{formattedDate}</p>
                 <p>
                   Hosted by <strong>{hostedBy}</strong>
                 </p>

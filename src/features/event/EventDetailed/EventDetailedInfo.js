@@ -4,7 +4,13 @@ import { Segment, Grid, Icon, Button } from 'semantic-ui-react'
 
 import EventDetailedMap from './EventDetailedMap'
 
-function EventDetailedInfo({ description, date, venue, lat, lng }) {
+function EventDetailedInfo({
+  description,
+  formattedDateTime,
+  venue,
+  lat,
+  lng,
+}) {
   const [showMap, setShowMap] = useState(false)
 
   function toggleShowMap() {
@@ -29,7 +35,7 @@ function EventDetailedInfo({ description, date, venue, lat, lng }) {
             <Icon name="calendar alternate" size="large" color="teal" />
           </Grid.Column>
           <Grid.Column width={15}>
-            <span>{date}</span>
+            <span>{formattedDateTime}</span>
           </Grid.Column>
         </Grid>
       </Segment>
@@ -58,7 +64,7 @@ function EventDetailedInfo({ description, date, venue, lat, lng }) {
 
 EventDetailedInfo.propTypes = {
   description: PropTypes.string.isRequired,
-  date: PropTypes.any.isRequired,
+  formattedDateTime: PropTypes.string.isRequired,
   venue: PropTypes.string.isRequired,
   lat: PropTypes.number.isRequired,
   lng: PropTypes.number.isRequired,

@@ -62,15 +62,15 @@ function EventDetailedPage({
     venueLatLng: { lat, lng },
   } = event
 
-  const formattedDate = formatDate(date.toDate(), 'dddd, Do MMMM')
-  const formattedTime = formatDate(date.toDate(), 'h:mm A')
+  const formattedDate = formatDate(date, 'dddd, Do MMMM')
+  const formattedTime = formatDate(date, 'h:mm A')
   const formattedDateTime = `${formattedDate} at ${formattedTime}`
 
   const formattedEvent = {
     ...event,
-    date: formattedDate,
-    time: formattedTime,
-    dateTime: formattedDateTime,
+    formattedDate,
+    formattedTime,
+    formattedDateTime,
   }
 
   const isHost = hostUid === auth.uid
@@ -89,7 +89,7 @@ function EventDetailedPage({
         />
         <EventDetailedInfo
           description={description}
-          date={formattedDateTime}
+          formattedDateTime={formattedDateTime}
           venue={venue}
           lat={lat}
           lng={lng}
@@ -125,6 +125,8 @@ function mapState(state) {
   if (state.firestore.ordered.events && state.firestore.ordered.events[0]) {
     event = { ...state.firestore.ordered.events[0] }
     event.attendees = event.attendees && objectToArray(event.attendees)
+    // convert firebase timestamp to date
+    event.date = event.date.toDate()
   }
 
   return {

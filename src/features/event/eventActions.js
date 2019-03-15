@@ -2,15 +2,14 @@ import { toastr } from 'react-redux-toastr'
 import { firestoreInstance as firestore } from '../../'
 
 import { createNewEvent } from '../../app/common/util/helpers'
-import { DELETE_EVENT, FETCH_EVENTS } from './eventConstants'
+import { FETCH_EVENTS_DB } from './eventConstants'
+import { setDbLastEventId, setDbHasMoreEvents } from '../../app/variableActions'
 
 import {
   asyncActionStart,
   asyncActionFinish,
   asyncActionError,
 } from '../async/asyncActions'
-
-import { fetchSampleData } from '../data/mockAPI'
 
 export function createEvent(event) {
   return async (dispatch, getState, { firebase }) => {
@@ -25,6 +24,7 @@ export function createEvent(event) {
     const newEvent = createNewEvent(user, photoURL, event)
 
     try {
+      dispatch(asyncActionStart())
       // create new event in firestore
       const createdEvent = await firestore.add(`events`, {
         ...newEvent,
@@ -39,8 +39,10 @@ export function createEvent(event) {
         host: true,
       })
 
+      dispatch(asyncActionFinish())
       toastr.success('Sucess!', 'Event has been created')
     } catch (error) {
+      dispatch(asyncActionError())
       console.log(error) // eslint-disable-line no-console
       toastr.error('Oops!', 'Something went wrong')
     }
@@ -66,7 +68,7 @@ export function updateEvent(event) {
 }
 
 export function eventCancelToggle(cancelled, eventId) {
-  return async (dispatch, getState) => {
+  return async () => {
     const message = cancelled
       ? 'Are you sure you want to cancel the event?'
       : 'Are you sure you want to Reactivate the event?'
@@ -85,34 +87,62 @@ export function eventCancelToggle(cancelled, eventId) {
   }
 }
 
-export function deleteEvent(eventId) {
-  return async dispatch => {
-    try {
-      dispatch({ type: DELETE_EVENT, payload: { eventId } })
-      toastr.success('Sucess!', 'Event has been deleted')
-    } catch (error) {
-      console.log(error) // eslint-disable-line no-console
-    }
-  }
-}
+export function getEventsForDashboard() {
+  return async (dispatch, getState, { firebase }) => {
+    const existingEvents = getState().events.dashboard
+    const lastEvent =
+      (existingEvents.length && existingEvents[existingEvents.length - 1]) || {}
 
-export function dispatchEvents(events) {
-  return {
-    type: FETCH_EVENTS,
-    payload: events,
-  }
-}
+    const today = new Date(Date.now())
+    // default firebase instance (not hooked to react-redux-firebase)
+    const firestore = firebase.firestore()
+    const eventsRef = firestore.collection('events')
+    const baseQuery = eventsRef
+      .where('date', '>=', today)
+      .orderBy('date')
+      .limit(2)
 
-export function fetchEvents() {
-  return async dispatch => {
     try {
       dispatch(asyncActionStart())
-      const response = await fetchSampleData()
-      dispatch(dispatchEvents(response))
+
+      const startAfter =
+        lastEvent.id &&
+        (await firestore
+          .collection('events')
+          .doc(lastEvent.id)
+          .get())
+      const query = lastEvent.id ? baseQuery.startAfter(startAfter) : baseQuery
+
+      const querySnap = await query.get()
+
+      if (querySnap && querySnap.docs && querySnap.docs.length > 1) {
+        dispatch(setDbHasMoreEvents(true))
+      } else if (querySnap && querySnap.docs && querySnap.docs.length <= 1) {
+        dispatch(setDbHasMoreEvents(false))
+      }
+
+      if (querySnap.docs.length === 0) {
+        dispatch(setDbLastEventId(lastEvent.id))
+        dispatch(asyncActionFinish())
+        return querySnap
+      }
+
+      const events = []
+
+      for (let i = 0; i < querySnap.docs.length; i++) {
+        const event = { ...querySnap.docs[i].data(), id: querySnap.docs[i].id }
+        events.push(event)
+      }
+
+      dispatch({ type: FETCH_EVENTS_DB, payload: { events } })
+      dispatch(setDbLastEventId(lastEvent.id))
       dispatch(asyncActionFinish())
+      return querySnap
     } catch (error) {
+      dispatch(asyncActionError())
+      console.log('Error occured in `getEventsForDashboard` action') // eslint-disable-line no-console
       console.log(error) // eslint-disable-line no-console
-      dispatch(asyncActionError(error))
+      toastr.error('Oops!', 'Something went wrong')
     }
   }
 }

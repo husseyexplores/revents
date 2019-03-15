@@ -35,9 +35,7 @@ function EventListItem({ event }) {
               </Item.Header>
               <Item.Description>
                 Hosted by{' '}
-                <Link to={`/profile/${event.hostUid}`}>
-                  hosted by {hostedBy}
-                </Link>
+                <Link to={`/profile/${event.hostUid}`}>{hostedBy}</Link>
               </Item.Description>
 
               {cancelled && (
