@@ -41,9 +41,9 @@ function EventDetailedMap({ lat, lng, zoom }) {
 }
 
 EventDetailedMap.propTypes = {
-  lat: PropType.number,
-  lng: PropType.number,
-  zoom: PropType.number,
+  lat: PropType.number.isRequired,
+  lng: PropType.number.isRequired,
+  zoom: PropType.number.isRequired,
 }
 
 EventDetailedMap.defaultProps = {
