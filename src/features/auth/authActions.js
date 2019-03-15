@@ -1,6 +1,6 @@
 import { SubmissionError, reset } from 'redux-form'
 import { toastr } from 'react-redux-toastr'
-import { LOGIN_USER, LOGOUT_USER } from './authConstants'
+import { LOGOUT_USER } from './authConstants'
 import { openModal, closeModal } from '../modals/modalActions'
 
 export function loginUser(creds) {

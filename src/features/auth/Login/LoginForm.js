@@ -2,14 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { combineValidators, isRequired } from 'revalidate'
-import {
-  Form,
-  Segment,
-  Button,
-  Divider,
-  Message,
-  Header,
-} from 'semantic-ui-react'
+import { Form, Segment, Button, Divider, Message } from 'semantic-ui-react'
 import { Field, reduxForm } from 'redux-form'
 
 import { TextInput } from '../../../app/common/components/form/'

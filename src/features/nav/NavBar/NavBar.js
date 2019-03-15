@@ -28,7 +28,6 @@ class NavBar extends Component {
 
   render() {
     const { auth, profile } = this.props
-    const { currentUser } = auth
     const authenticated = auth.isLoaded && !auth.isEmpty
 
     return (
@@ -58,6 +57,7 @@ class NavBar extends Component {
             <SignedInMenu
               handleSignOut={this.handleSignOut}
               profile={profile}
+              auth={auth}
             />
           ) : (
             <SignedOutMenu
