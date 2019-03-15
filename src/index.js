@@ -32,6 +32,13 @@ const rrfProps = {
   createFirestoreInstance, // <- needed if using firestore
 }
 
+// Custom firestore instance for ease of use
+const firestoreInstance = createFirestoreInstance(
+  firebase,
+  rrfConfig,
+  store.dispatch
+)
+
 const rootEl = document.getElementById('root')
 
 function render() {
@@ -67,3 +74,5 @@ render()
 // unregister() to register() below. Note this comes with some pitfalls.
 // Learn more about service workers: http://bit.ly/CRA-PWA
 serviceWorker.unregister()
+
+export { firestoreInstance }
