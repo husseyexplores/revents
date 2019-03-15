@@ -1,37 +1,22 @@
-import React, { Component } from 'react'
+import React from 'react'
 import PropTypes from 'prop-types'
 
 import EventListItem from './EventListItem'
 
-class EventList extends Component {
-  renderEventListItems() {
-    const { events, handleDeleteEvent } = this.props
-
-    if (!events || !events.length) {
-      return <h4>There are no events to display.</h4>
-    }
-
-    if (events && events.length > 0) {
-      return events.map(evt => (
-        <EventListItem
-          key={evt.id}
-          event={evt}
-          handleDeleteEvent={handleDeleteEvent}
-        />
-      ))
-    }
-
-    return null
+function EventList({ events }) {
+  if (!events || !events.length) {
+    return <h4>There are no events to display.</h4>
   }
 
-  render() {
-    return <div>{this.renderEventListItems()}</div>
+  if (events && events.length > 0) {
+    return events.map(evt => <EventListItem key={evt.id} event={evt} />)
   }
+
+  return null
 }
 
 EventList.propTypes = {
   events: PropTypes.arrayOf(PropTypes.object),
-  handleDeleteEvent: PropTypes.func,
 }
 
 EventList.defaultProps = {}

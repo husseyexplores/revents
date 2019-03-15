@@ -2,25 +2,14 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { compose } from 'redux'
 import { connect } from 'react-redux'
-import {
-  firestoreConnect,
-  firebaseConnect,
-  isLoaded,
-  isEmpty,
-} from 'react-redux-firebase'
+import { firestoreConnect, isLoaded, isEmpty } from 'react-redux-firebase'
 import { Grid } from 'semantic-ui-react'
-
-import { deleteEvent } from '../eventActions'
 
 import Spinner from '../../../app/common/components/loaders/Spinner'
 import EventList from '../EventList/'
 import EventActicity from '../EventActivity'
 
-function EventDashBoard({ events, deleteEvent }) {
-  const handleDeleteEvent = eventId => () => {
-    deleteEvent(eventId)
-  }
-
+function EventDashBoard({ events }) {
   if (!isLoaded(events) || isEmpty(events)) {
     return <Spinner content="Loading..." size="big" dim />
   }
@@ -28,7 +17,7 @@ function EventDashBoard({ events, deleteEvent }) {
   return (
     <Grid>
       <Grid.Column width={10}>
-        <EventList handleDeleteEvent={handleDeleteEvent} events={events} />
+        <EventList events={events} />
       </Grid.Column>
       <Grid.Column width={6}>
         <EventActicity />
@@ -39,7 +28,6 @@ function EventDashBoard({ events, deleteEvent }) {
 
 EventDashBoard.propTypes = {
   events: PropTypes.array,
-  deleteEvent: PropTypes.func.isRequired,
 }
 
 EventDashBoard.defaultProps = {}
@@ -50,15 +38,10 @@ function mapState(state) {
   }
 }
 
-const mapDispatch = {
-  deleteEvent,
-}
-
 export default compose(
   connect(
     mapState,
-    mapDispatch
+    null
   ),
-  firebaseConnect(),
   firestoreConnect([{ collection: 'events' }])
 )(EventDashBoard)

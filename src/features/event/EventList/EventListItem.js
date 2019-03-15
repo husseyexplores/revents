@@ -95,7 +95,6 @@ EventListItem.propTypes = {
       PropTypes.object,
     ]),
   }).isRequired,
-  handleDeleteEvent: PropTypes.func,
 }
 
 export default EventListItem
