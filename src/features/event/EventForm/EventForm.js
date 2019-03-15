@@ -1,19 +1,19 @@
 /* global google */
-import React, { Component } from 'react'
+import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
+import { compose } from 'redux'
 import { reduxForm, Field } from 'redux-form'
+import { withFirestore } from 'react-redux-firebase'
 import {
   combineValidators,
   composeValidators,
   isRequired,
   hasLengthGreaterThan,
 } from 'revalidate'
-import formatDate from 'date-fns/format'
-import cuid from 'cuid'
 import { Segment, Form, Button, Grid, Header } from 'semantic-ui-react'
 
-import { createEvent, updateEvent, deleteEvent } from '../eventActions'
+import { createEvent, updateEvent, eventCancelToggle } from '../eventActions'
 
 import {
   TextInput,
@@ -32,16 +32,45 @@ const categoryOptions = [
   { key: 'travel', text: 'Travel', value: 'travel' },
 ]
 
-class EventForm extends Component {
-  state = {
-    cityLatLng: this.props.initialValues.venueLatLng || {},
-    cityError: null,
-    venueLatLng: this.props.initialValues.venueLatLng || {},
-    venueError: null,
-  }
+function EventForm({
+  event, // same as initialValues
+  firestore,
+  history,
+  match,
+  handleSubmit,
+  invalid,
+  submitting,
+  pristine,
+  createEvent,
+  updateEvent,
+  eventCancelToggle,
+}) {
+  const [cityLatLng, setCityLatLng] = useState(event.cityLatLng || {})
+  const [cityError, setCityError] = useState(null)
+  const [venueLatLng, setVenueLatLng] = useState(event.venueLatLng || {})
+  const [venueError, setVenueError] = useState(null) // eslint-disable-line no-unused-vars
 
-  handleCancel = () => {
-    const { history, match } = this.props
+  useEffect(() => {
+    let isSubscribed = false
+    const eventId = match.params.id
+
+    // subscribe
+    ;(async () => {
+      if (match.url.includes('/manage/') && eventId) {
+        isSubscribed = true
+        await firestore.setListener(`events/${eventId}`)
+      }
+    })()
+
+    // unsubscribe on unmount
+    if (isSubscribed) {
+      return () => {
+        firestore.unsetListener(`events/${eventId}`)
+      }
+    }
+  }, [firestore, match.params, match.url])
+
+  function handleCancelForm() {
     const { id: eventId } = match.params
     const { url } = match
 
@@ -54,157 +83,162 @@ class EventForm extends Component {
     }
   }
 
-  onSubmit = values => {
-    const { initialValues, createEvent, updateEvent } = this.props
-    const { cityLatLng, venueLatLng } = this.state
-    const formattedDate = formatDate(values.date)
+  function onSubmit(values) {
+    // we get ALL values, modified or unmodified
 
-    if (initialValues.id) {
-      updateEvent({ ...values, cityLatLng, venueLatLng, date: formattedDate })
-      this.props.history.push(`/event/${initialValues.id}`)
+    if (event.id) {
+      updateEvent({ ...values, cityLatLng, venueLatLng })
+      history.push(`/event/${event.id}`)
     } else {
       createEvent({
         ...values,
         cityLatLng,
         venueLatLng,
-        date: formattedDate,
-        id: cuid(),
-        hostPhotoURL: '/assets/user.png',
-        hostedBy: 'Hassan',
       })
-      this.props.history.push(`/events`)
+      history.push(`/events`)
     }
   }
 
-  render() {
-    // method from reduxForm
-    const { handleSubmit, invalid, submitting, pristine } = this.props
-    const { cityLatLng, cityError } = this.state
-
-    let cityLocation
-
-    if (cityLatLng.lat && !cityError && window.google) {
-      cityLocation = new google.maps.LatLng(cityLatLng)
-    }
-
-    return (
-      <Grid>
-        <Grid.Column width={10}>
-          <Segment>
-            <Header sub color="teal" content="Event Details" />
-            <Form onSubmit={handleSubmit(this.onSubmit)} error>
-              <Field
-                name="title"
-                component={TextInput}
-                type="text"
-                placeholder="Give your event a name"
-              />
-              <Field
-                name="category"
-                component={SelectInput}
-                options={categoryOptions}
-                placeholder="What is your event about?"
-              />
-              <Field
-                name="description"
-                component={TextArea}
-                type="text"
-                rows={3}
-                placeholder="Tell us about your event"
-              />
-              <Header sub color="teal" content="Event Location Details" />
-              <Field
-                name="city"
-                component={PlaceInput}
-                searchOptions={{
-                  types: ['(cities)'],
-                }}
-                onCoords={cityLatLng =>
-                  this.setState({ cityLatLng, cityError: null })
-                }
-                onError={cityError => this.setState({ cityError })}
-                type="text"
-                placeholder="Event city"
-              />
-              <Field
-                disabled={!cityLatLng.lat}
-                name="venue"
-                component={PlaceInput}
-                onCoords={venueLatLng =>
-                  this.setState({ venueLatLng, venueError: null })
-                }
-                onError={venueError => this.setState({ venueError })}
-                searchOptions={{
-                  location: cityLocation,
-                  radius: 1000,
-                  types: ['establishment'],
-                }}
-                type="text"
-                placeholder="Event venue"
-              />
-              <Field
-                name="date"
-                component={DateInput}
-                dateFormat="yyyy-MM-dd HH:mm"
-                timeFormat="HH:mm"
-                showTimeSelect
-                placeholder="Data and Time of event"
-              />
-              <Button
-                positive
-                type="submit"
-                disabled={invalid || submitting || pristine}
-              >
-                Submit
-              </Button>
-              <Button type="button" onClick={this.handleCancel}>
-                Cancel
-              </Button>
-            </Form>
-          </Segment>
-        </Grid.Column>
-      </Grid>
-    )
+  // toggle cancel event
+  function handleCancelEvent(isCancelled, eventId) {
+    return () => eventCancelToggle(isCancelled, eventId)
   }
+
+  let cityLocation
+
+  if (cityLatLng.lat && !cityError && window.google) {
+    cityLocation = new google.maps.LatLng(cityLatLng)
+  }
+
+  return (
+    <Grid>
+      <Grid.Column width={10}>
+        <Segment>
+          <Header sub color="teal" content="Event Details" />
+          <Form onSubmit={handleSubmit(onSubmit)} error>
+            <Field
+              name="title"
+              component={TextInput}
+              type="text"
+              placeholder="Give your event a name"
+            />
+            <Field
+              name="category"
+              component={SelectInput}
+              options={categoryOptions}
+              placeholder="What is your event about?"
+            />
+            <Field
+              name="description"
+              component={TextArea}
+              type="text"
+              rows={3}
+              placeholder="Tell us about your event"
+            />
+            <Header sub color="teal" content="Event Location Details" />
+            <Field
+              name="city"
+              component={PlaceInput}
+              searchOptions={{
+                types: ['(cities)'],
+              }}
+              onCoords={cityLatLng => {
+                setCityLatLng(cityLatLng)
+                setCityError(cityError)
+              }}
+              onError={cityError => setCityError(cityError)}
+              type="text"
+              placeholder="Event city"
+            />
+            <Field
+              disabled={!cityLatLng.lat}
+              name="venue"
+              component={PlaceInput}
+              onCoords={venueLatLng => {
+                setVenueLatLng(venueLatLng)
+                setVenueError(null)
+              }}
+              onError={venueError => setVenueError(venueError)}
+              searchOptions={{
+                location: cityLocation,
+                radius: 1000,
+                types: ['establishment'],
+              }}
+              type="text"
+              placeholder="Event venue"
+            />
+            <Field
+              name="date"
+              component={DateInput}
+              dateFormat="yyyy-MM-dd HH:mm"
+              timeFormat="HH:mm"
+              showTimeSelect
+              placeholder="Data and Time of event"
+              showYearDropdown
+            />
+            <Button
+              positive
+              type="submit"
+              disabled={invalid || submitting || pristine}
+            >
+              Submit
+            </Button>
+            <Button type="button" onClick={handleCancelForm}>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              color={event.cancelled ? 'green' : 'red'}
+              floated="right"
+              onClick={handleCancelEvent(!event.cancelled, event.id)}
+            >
+              {event.cancelled ? 'Reactivate Event' : 'Cancel Event'}
+            </Button>
+          </Form>
+        </Segment>
+      </Grid.Column>
+    </Grid>
+  )
 }
 
 EventForm.propTypes = {
+  firestore: PropTypes.object.isRequired,
   history: PropTypes.object.isRequired,
   match: PropTypes.object.isRequired,
   initialValues: PropTypes.object.isRequired,
+  event: PropTypes.object.isRequired,
   handleSubmit: PropTypes.func.isRequired,
   createEvent: PropTypes.func.isRequired,
   updateEvent: PropTypes.func.isRequired,
+  eventCancelToggle: PropTypes.func.isRequired,
+  invalid: PropTypes.bool,
+  submitting: PropTypes.bool,
+  pristine: PropTypes.bool,
 }
 
 EventForm.defaultProps = {}
 
-function mapState(state, ownProps) {
-  const eventId = ownProps.match.params.id
+function mapState(state, props) {
+  let event = {}
 
-  if (eventId && state.events.length) {
-    const eventArr = state.events.filter(evt => evt.id === eventId)
-
-    if (eventArr.length === 0 && ownProps.match.url.includes('/manage/')) {
-      ownProps.history.replace('/events/')
-      return
-    }
-
-    return {
-      initialValues: eventArr[0],
-    }
+  if (
+    props.match.url.includes('/manage/') &&
+    state.firestore.ordered.events &&
+    state.firestore.ordered.events[0]
+  ) {
+    event = state.firestore.ordered.events[0]
   }
 
-  // default case
   return {
-    initialValues: {},
+    initialValues: { ...event },
+    event: { ...event },
   }
 }
 
 const mapDispatch = {
   createEvent,
   updateEvent,
-  deleteEvent,
+  eventCancelToggle,
 }
 
 const validate = combineValidators({
@@ -223,13 +257,15 @@ const validate = combineValidators({
   date: isRequired('Event date'),
 })
 
-const withReduxForm = reduxForm({
-  form: 'eventForm',
-  enableReinitialize: true,
-  validate,
-})(EventForm)
-
-export default connect(
-  mapState,
-  mapDispatch
-)(withReduxForm)
+export default compose(
+  withFirestore,
+  connect(
+    mapState,
+    mapDispatch
+  ),
+  reduxForm({
+    form: 'eventForm',
+    enableReinitialize: true,
+    validate,
+  })
+)(EventForm)

@@ -1,42 +1,91 @@
-import React from 'react'
+import React, { useEffect } from 'react'
+import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
+import { compose } from 'redux'
+import { withFirestore } from 'react-redux-firebase'
 import formatDate from 'date-fns/format'
 import { Grid } from 'semantic-ui-react'
+
+import { objectToArray } from '../../../app/common/util/helpers'
 
 import EventDetailedHeader from './EventDetailedHeader'
 import EventDetailedInfo from './EventDetailedInfo'
 import EventDetailedChat from './EventDetailedChat'
 import EventDetailedSidebar from './EventDetailedSidebar'
+import Spinner from '../../../app/common/components/loaders/Spinner'
 
-import { eventPropTypes } from '../eventPropTypes'
+import { goingToEvent, cancelGoingToEvent } from '../../user/userActions'
 
-function EventDetailedPage({ event }) {
+function EventDetailedPage({
+  goingToEvent,
+  cancelGoingToEvent,
+  auth,
+  event,
+  firestore,
+  match: { params },
+}) {
+  useEffect(() => {
+    const eventId = params.id
+    ;(async () => {
+      await firestore.setListener(`events/${eventId}`)
+    })()
+
+    // unsubscribe on unmount
+    return () => {
+      firestore.unsetListener(`events/${eventId}`)
+    }
+  }, [firestore, params.id])
+
+  /*
+  useEffect(() => {
+    ;(async () => {
+      const fetchedEvent = await firestore.get(`events/${params.id}`)
+      if (!fetchedEvent.exists) {
+        toastr.error('Sorry!', 'Event not found')
+        history.push('/events')
+      }
+    })()
+  }, [firestore, history, params.id])
+  */
+
+  if (!event || !event.title) {
+    return <Spinner content="Loading..." dim size="big" />
+  }
+
   const {
-    title,
     date,
-    category,
-    hostedBy,
-    // hostPhotoURL,
     attendees,
-    // city,
     venue,
     description,
-    id,
+    // cancelled,
+    hostUid,
     venueLatLng: { lat, lng },
   } = event
 
-  const formattedDate = formatDate(date, 'dddd, Do MMMM')
-  const formattedTime = formatDate(date, 'h:mm A')
+  const formattedDate = formatDate(date.toDate(), 'dddd, Do MMMM')
+  const formattedTime = formatDate(date.toDate(), 'h:mm A')
   const formattedDateTime = `${formattedDate} at ${formattedTime}`
+
+  const formattedEvent = {
+    ...event,
+    date: formattedDate,
+    time: formattedTime,
+    dateTime: formattedDateTime,
+  }
+
+  const isHost = hostUid === auth.uid
+  const isGoing =
+    attendees && attendees.some(attendee => attendee.id === auth.uid)
+
   return (
     <Grid>
       <Grid.Column width={10}>
         <EventDetailedHeader
-          title={title}
-          category={category}
-          date={formattedDateTime}
-          hostedBy={hostedBy}
-          id={id}
+          event={formattedEvent}
+          isHost={isHost}
+          isGoing={isGoing}
+          goingToEvent={goingToEvent}
+          cancelGoingToEvent={cancelGoingToEvent}
         />
         <EventDetailedInfo
           description={description}
@@ -55,29 +104,44 @@ function EventDetailedPage({ event }) {
 }
 
 EventDetailedPage.propTypes = {
-  event: eventPropTypes.isRequired,
+  goingToEvent: PropTypes.func.isRequired,
+  cancelGoingToEvent: PropTypes.func.isRequired,
+  event: PropTypes.object.isRequired,
+  auth: PropTypes.object.isRequired,
+  firestore: PropTypes.object.isRequired,
+  history: PropTypes.object.isRequired,
+  match: PropTypes.shape({
+    params: PropTypes.shape({
+      id: PropTypes.string.isRequired,
+    }).isRequired,
+  }).isRequired,
 }
 
 EventDetailedPage.defaultProps = {}
 
-function mapState(state, ownProps) {
-  const currentEventId = ownProps.match.params.id
+function mapState(state) {
   let event = {}
 
-  if (currentEventId && state.events.length > 0) {
-    event = state.events.filter(evt => evt.id === currentEventId)[0]
-  }
-
-  if (!event.attendees) {
-    event.attendees = []
+  if (state.firestore.ordered.events && state.firestore.ordered.events[0]) {
+    event = { ...state.firestore.ordered.events[0] }
+    event.attendees = event.attendees && objectToArray(event.attendees)
   }
 
   return {
     event,
+    auth: state.firebase.auth,
   }
 }
 
-export default connect(
-  mapState,
-  null
+const mapDispatch = {
+  goingToEvent,
+  cancelGoingToEvent,
+}
+
+export default compose(
+  withFirestore,
+  connect(
+    mapState,
+    mapDispatch
+  )
 )(EventDetailedPage)

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
 import { Menu, Image, Dropdown } from 'semantic-ui-react'
 
-function SignedInMenu({ handleSignOut, profile }) {
+function SignedInMenu({ handleSignOut, profile, auth }) {
   const placeholderImage = '/assets/user.png'
   const userImage = profile.photoURL || placeholderImage
 
@@ -15,7 +15,12 @@ function SignedInMenu({ handleSignOut, profile }) {
           <Dropdown.Item text="Create Event" icon="plus" />
           <Dropdown.Item text="My Events" icon="calendar" />
           <Dropdown.Item text="My Network" icon="users" />
-          <Dropdown.Item text="My Profile" icon="user" />
+          <Dropdown.Item
+            text="My Profile"
+            icon="user"
+            as={Link}
+            to={`/profile/${auth.uid}`}
+          />
           <Dropdown.Item
             as={Link}
             to="/settings"
@@ -30,8 +35,9 @@ function SignedInMenu({ handleSignOut, profile }) {
 }
 
 SignedInMenu.propTypes = {
-  handleSignOut: PropTypes.func,
-  profile: PropTypes.object,
+  handleSignOut: PropTypes.func.isRequired,
+  profile: PropTypes.object.isRequired,
+  auth: PropTypes.object.isRequired,
 }
 
 SignedInMenu.defaultProps = {}

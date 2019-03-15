@@ -16,7 +16,15 @@ const eventImageTextStyle = {
   color: 'white',
 }
 
-function EventDetailedHeader({ title, category, date, hostedBy, id }) {
+function EventDetailedHeader({
+  event,
+  isHost,
+  isGoing,
+  goingToEvent,
+  cancelGoingToEvent,
+}) {
+  const { title, category, date, hostedBy, id } = event
+
   return (
     <Segment.Group>
       <Segment basic attached="top" style={{ padding: '0' }}>
@@ -46,25 +54,37 @@ function EventDetailedHeader({ title, category, date, hostedBy, id }) {
       </Segment>
 
       <Segment attached="bottom">
-        <Button>Cancel My Place</Button>
-        <Button color="teal">JOIN THIS EVENT</Button>
+        {!isHost && (
+          <>
+            {isGoing && (
+              <Button onClick={() => cancelGoingToEvent(event)}>
+                Cancel My Place
+              </Button>
+            )}
+            {!isGoing && (
+              <Button onClick={() => goingToEvent(event)} color="teal">
+                JOIN THIS EVENT
+              </Button>
+            )}
+          </>
+        )}
 
-        <Button as={Link} to={`/manage/${id}`} color="orange" floated="right">
-          Manage Event
-        </Button>
+        {isHost && (
+          <Button as={Link} to={`/manage/${id}`} color="orange">
+            Manage Event
+          </Button>
+        )}
       </Segment>
     </Segment.Group>
   )
 }
 
 EventDetailedHeader.propTypes = {
-  title: PropTypes.string.isRequired,
-  category: PropTypes.string.isRequired,
-  date: PropTypes.any.isRequired,
-  hostedBy: PropTypes.string,
-  id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  event: PropTypes.object.isRequired,
+  isHost: PropTypes.bool.isRequired,
+  isGoing: PropTypes.bool.isRequired,
+  goingToEvent: PropTypes.func.isRequired,
+  cancelGoingToEvent: PropTypes.func.isRequired,
 }
-
-EventDetailedHeader.defaultProps = {}
 
 export default EventDetailedHeader

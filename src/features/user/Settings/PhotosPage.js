@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react'
 import PropTypes from 'prop-types'
 import { compose } from 'redux'
 import { connect } from 'react-redux'
-import { withFirestore, firestoreConnect } from 'react-redux-firebase'
+import { firestoreConnect } from 'react-redux-firebase'
 import { toastr } from 'react-redux-toastr'
 import { useDropzone } from 'react-dropzone'
 import Cropper from 'react-cropper'
@@ -49,7 +49,6 @@ const rejectStyle = {
 }
 
 function PhotosPage({
-  firestore,
   uploadProfileImage,
   deletePhoto,
   setMainPhoto,
@@ -114,7 +113,7 @@ function PhotosPage({
 
   async function handleUploadImage() {
     try {
-      await uploadProfileImage(image, firestore)
+      await uploadProfileImage(image)
       cancelCrop()
 
       toastr.success('Success!', 'Photo has been uploaded')
@@ -126,7 +125,7 @@ function PhotosPage({
   function handlePhotoDelete(photo) {
     return async () => {
       try {
-        await deletePhoto(photo, firestore)
+        await deletePhoto(photo)
 
         toastr.success('Success!', 'Photo has been deleted')
       } catch (error) {
@@ -226,36 +225,36 @@ function PhotosPage({
 
         {Array.isArray(photos) &&
           photos.length > 0 &&
-          photos.map(photo => {
-            if (photo.url === profile.photoURL) return
-            return (
-              <Card key={photo.id}>
-                <Image src={photo.url} />
-                <div className="ui two buttons">
-                  <Button
-                    onClick={handleSetMainPhoto(photo.url)}
-                    basic
-                    color="green"
-                  >
-                    Main
-                  </Button>
-                  <Button
-                    onClick={handlePhotoDelete(photo)}
-                    basic
-                    icon="trash"
-                    color="red"
-                  />
-                </div>
-              </Card>
-            )
-          })}
+          photos
+            .filter(photo => photo.url !== profile.photoURL)
+            .map(photo => {
+              return (
+                <Card key={photo.id}>
+                  <Image src={photo.url} />
+                  <div className="ui two buttons">
+                    <Button
+                      onClick={handleSetMainPhoto(photo.url)}
+                      basic
+                      color="green"
+                    >
+                      Main
+                    </Button>
+                    <Button
+                      onClick={handlePhotoDelete(photo)}
+                      basic
+                      icon="trash"
+                      color="red"
+                    />
+                  </div>
+                </Card>
+              )
+            })}
       </Card.Group>
     </Segment>
   )
 }
 
 PhotosPage.propTypes = {
-  firestore: PropTypes.object.isRequired,
   uploadProfileImage: PropTypes.func.isRequired,
   deletePhoto: PropTypes.func.isRequired,
   setMainPhoto: PropTypes.func.isRequired,
@@ -295,6 +294,5 @@ export default compose(
     mapState,
     mapDispatch
   ),
-  firestoreConnect(props => query(props)),
-  withFirestore
+  firestoreConnect(props => query(props))
 )(PhotosPage)

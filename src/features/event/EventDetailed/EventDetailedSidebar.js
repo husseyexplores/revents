@@ -1,10 +1,9 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import { Link } from 'react-router-dom'
 import { Segment, List, Label, Image } from 'semantic-ui-react'
 
 function EventDetailedSidebar({ attendees }) {
-  const isHost = false
-
   return (
     <div>
       <Segment
@@ -24,7 +23,7 @@ function EventDetailedSidebar({ attendees }) {
           {attendees &&
             attendees.map(attendee => (
               <List.Item key={attendee.id} style={{ position: 'relative' }}>
-                {isHost && (
+                {attendee.host && (
                   <Label
                     style={{ position: 'absolute' }}
                     color="orange"
@@ -33,10 +32,16 @@ function EventDetailedSidebar({ attendees }) {
                     Host
                   </Label>
                 )}
-                <Image avatar size="tiny" src={attendee.photoURL} />
+                <Image
+                  avatar
+                  size="tiny"
+                  src={attendee.photoURL || '/assets/user.png'}
+                />
                 <List.Content verticalAlign="middle">
                   <List.Header as="h3">
-                    <a>{attendee.name}</a>
+                    <Link to={`/profile/${attendee.id}`}>
+                      {attendee.displayName}
+                    </Link>
                   </List.Header>
                 </List.Content>
               </List.Item>
