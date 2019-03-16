@@ -12,16 +12,19 @@ import UserDetailedEvents from './UserDetailedEvents'
 import UserDetailedSidebar from './UserDetailedSidebar'
 import Spinner from '../../../app/common/components/loaders/Spinner'
 
-import { getUserEvents } from '../userActions'
+import { getUserEvents, followUser, unFollowUser } from '../userActions'
 import { userDetailedQuery } from '../userQueries'
 
 function UserDetailedPage({
-  userUid,
+  isFollowing,
+  curProfileUserUid,
   user,
   photos,
   isCurrentUser,
   isLoading,
   getUserEvents,
+  followUser,
+  unFollowUser,
   isEventsLoading,
   events,
 }) {
@@ -29,16 +32,16 @@ function UserDetailedPage({
   useEffect(() => {
     if (user && user.createdAt) {
       ;(async () => {
-        await getUserEvents(userUid)
+        await getUserEvents(curProfileUserUid)
       })()
     }
-  }, [getUserEvents, user, userUid])
+  }, [getUserEvents, user, curProfileUserUid])
   if (isLoading) {
     return <Spinner size="big" content="Loading..." dim />
   }
 
   function changeTab(e, data) {
-    getUserEvents(userUid, data.activeIndex)
+    getUserEvents(curProfileUserUid, data.activeIndex)
   }
 
   return (
@@ -50,7 +53,14 @@ function UserDetailedPage({
         <UserDetailedDescription user={user} />
       </Grid.Column>
       <Grid.Column width={4}>
-        <UserDetailedSidebar isCurrentUser={isCurrentUser} />
+        <UserDetailedSidebar
+          isCurrentUser={isCurrentUser}
+          followUser={followUser}
+          curProfileUserUid={curProfileUserUid}
+          isFollowing={isFollowing}
+          isLoading={isLoading}
+          unFollowUser={unFollowUser}
+        />
       </Grid.Column>
 
       {!photos ? (
@@ -74,19 +84,26 @@ function UserDetailedPage({
 
 UserDetailedPage.propTypes = {
   user: PropTypes.object.isRequired,
-  userUid: PropTypes.string.isRequired,
+  curProfileUserUid: PropTypes.string.isRequired,
+  signedInUserUid: PropTypes.string.isRequired,
   photos: PropTypes.array,
   isCurrentUser: PropTypes.bool.isRequired,
   isLoading: PropTypes.bool.isRequired,
   getUserEvents: PropTypes.func.isRequired,
+  followUser: PropTypes.func.isRequired,
+  unFollowUser: PropTypes.func.isRequired,
   events: PropTypes.array.isRequired,
   isEventsLoading: PropTypes.bool.isRequired,
+  isFollowing: PropTypes.bool.isRequired,
 }
 
 function mapState(state, props) {
-  const userUid = props.match.params.id
+  const curProfileUserUid = props.match.params.id
+  const signedInUserUid = state.firebase.auth.uid
+  const isCurrentUser = curProfileUserUid === signedInUserUid
+
   let profile = {}
-  if (userUid === state.firebase.auth.uid) {
+  if (isCurrentUser) {
     profile = state.firebase.profile
   } else if (!isEmpty(state.firestore.ordered.profile)) {
     profile = state.firestore.ordered.profile[0]
@@ -109,19 +126,30 @@ function mapState(state, props) {
     date: evt.date.toDate(),
   }))
 
+  let isFollowing = false
+  let following
+  if (!isCurrentUser && !isEmpty(state.firestore.ordered.following)) {
+    following = state.firestore.ordered.following
+    isFollowing = following.some(person => person.id === curProfileUserUid)
+  }
+
   return {
     events,
     isEventsLoading: state.async.isLoading,
-    isCurrentUser: userUid === state.firebase.auth.uid,
-    userUid: userUid,
+    isCurrentUser,
+    curProfileUserUid,
+    signedInUserUid,
     user: profile,
     photos: state.firestore.ordered.photos,
     isLoading,
+    isFollowing,
   }
 }
 
 const mapDispatch = {
   getUserEvents,
+  followUser,
+  unFollowUser,
 }
 
 export default compose(

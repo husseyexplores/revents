@@ -275,3 +275,63 @@ export function getUserEvents(userUid, activeTab) {
     }
   }
 }
+
+/* eslint-disable no-console */
+export function followUser(userToFollowId) {
+  return async (dispatch, getState, { firebase }) => {
+    // signed-in user info, the one who clicked on `follow` button
+    const user = firebase.auth().currentUser
+
+    try {
+      // fetch userToFollow data
+      const userToFollow = await firestore.get(`users/${userToFollowId}`) // doc
+
+      const {
+        displayName,
+        photoURL,
+        city = 'Unknown city',
+      } = userToFollow.data()
+
+      // in the signed-in user's doc, create a doc in this sub collection:
+      // `users<doc>/following<doc>` => attendeeLookup
+      await firestore.set(`users/${user.uid}/following/${userToFollowId}`, {
+        city,
+        displayName,
+        photoURL,
+      })
+
+      toastr.success('Success!', `You are now following ${displayName}`)
+    } catch (error) {
+      toastr.error('Oops!', 'Some error occurred')
+      console.log('Error occured in `followUser` action')
+      console.log(error)
+    }
+  }
+}
+
+export function unFollowUser(userToUnfollowId) {
+  return async (dispatch, getState, { firebase }) => {
+    // signed-in user info, the one who clicked on `unfollow` button
+    const user = firebase.auth().currentUser
+
+    try {
+      // fetch userToUnFollow data
+      const userToUnFollow = await firestore.get(`users/${userToUnfollowId}`) // doc
+
+      const { displayName } = userToUnFollow.data()
+
+      // delete the doc from `following` in firestore
+      await firestore.delete({
+        collection: 'users',
+        doc: user.uid,
+        subcollections: [{ collection: 'following', doc: userToUnfollowId }],
+      })
+
+      toastr.success('Success!', `You unfollowed ${displayName}`)
+    } catch (error) {
+      toastr.error('Oops!', 'Some error occurred')
+      console.log('Error occured in `unFollowUser` action')
+      console.log(error)
+    }
+  }
+}

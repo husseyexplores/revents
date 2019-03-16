@@ -79,3 +79,72 @@ exports.cancelActivity = functions.firestore
         return console.log('Error cancelling activity.', e)
       })
   })
+
+exports.onFollowUser = functions.firestore
+  .document('users/{followerUid}/following/{followingUid}')
+  .onCreate((event, context) => {
+    const { followerUid, followingUid } = context.params
+    const followedPersonData = event.data()
+
+    console.log({
+      followerUid,
+      followingUid,
+      followedPersonData,
+    })
+
+    const followerDoc = admin
+      .firestore()
+      .collection('users')
+      .doc(followerUid)
+
+    followerDoc
+      .get()
+      .then(doc => {
+        if (doc.exists) {
+          const {
+            city = 'Unknown City',
+            displayName,
+            photoURL = '/assets/user.png',
+          } = doc.data()
+          const follower = {
+            city,
+            displayName,
+            photoURL,
+          }
+          console.log('Follower data:', follower)
+
+          return admin
+            .firestore()
+            .collection('users')
+            .doc(followingUid)
+            .collection('followers')
+            .doc(followerUid)
+            .set(follower)
+        } else {
+          // doc.data() will be undefined in this case
+          console.log('No such document!')
+          throw new Error('Document does not exist')
+        }
+      })
+      .catch(error => {
+        console.log('Error getting document:', error)
+      })
+  })
+
+exports.onUnFollowUser = functions.firestore
+  .document('users/{followerUid}/following/{followingUid}')
+  .onDelete((event, context) => {
+    return admin
+      .firestore()
+      .collection('users')
+      .doc(followingUid)
+      .collection('followers')
+      .doc(followerUid)
+      .delete()
+      .then(() => {
+        return console.log('Follower removed. Doc deleted')
+      })
+      .catch(e => {
+        return console.log('Error removing Follower.', e)
+      })
+  })
