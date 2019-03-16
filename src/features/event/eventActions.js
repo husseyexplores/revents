@@ -146,3 +146,25 @@ export function getEventsForDashboard() {
     }
   }
 }
+
+export function addEventComment(eventId, values, parentId) {
+  return async (dispatch, getState, { firebase }) => {
+    const { profile } = getState().firebase
+    const user = firebase.auth().currentUser
+    const newComment = {
+      displayName: profile.displayName,
+      photoURL: profile.photoURL || '/assets/user.png',
+      uid: user.uid,
+      text: values.comment.trim(),
+      date: Date.now(),
+      parentId,
+    }
+    try {
+      await firebase.push(`event_chat/${eventId}`, newComment)
+    } catch (error) {
+      console.log('Error occured in `addEventComment` action') // eslint-disable-line no-console
+      console.log(error) // eslint-disable-line no-console
+      toastr.error('Oops!', 'Problem adding comment')
+    }
+  }
+}

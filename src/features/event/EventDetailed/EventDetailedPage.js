@@ -2,11 +2,11 @@ import React, { useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { compose } from 'redux'
-import { withFirestore } from 'react-redux-firebase'
+import { withFirestore, firebaseConnect, isEmpty } from 'react-redux-firebase'
 import formatDate from 'date-fns/format'
 import { Grid } from 'semantic-ui-react'
 
-import { objectToArray } from '../../../app/common/util/helpers'
+import { objectToArray, createDataTree } from '../../../app/common/util/helpers'
 
 import EventDetailedHeader from './EventDetailedHeader'
 import EventDetailedInfo from './EventDetailedInfo'
@@ -15,13 +15,16 @@ import EventDetailedSidebar from './EventDetailedSidebar'
 import Spinner from '../../../app/common/components/loaders/Spinner'
 
 import { goingToEvent, cancelGoingToEvent } from '../../user/userActions'
+import { addEventComment } from '../eventActions'
 
 function EventDetailedPage({
+  addEventComment,
   goingToEvent,
   cancelGoingToEvent,
   auth,
   event,
   firestore,
+  eventChat,
   match: { params },
 }) {
   useEffect(() => {
@@ -35,18 +38,6 @@ function EventDetailedPage({
       firestore.unsetListener(`events/${eventId}`)
     }
   }, [firestore, params.id])
-
-  /*
-  useEffect(() => {
-    ;(async () => {
-      const fetchedEvent = await firestore.get(`events/${params.id}`)
-      if (!fetchedEvent.exists) {
-        toastr.error('Sorry!', 'Event not found')
-        history.push('/events')
-      }
-    })()
-  }, [firestore, history, params.id])
-  */
 
   if (!event || !event.title) {
     return <Spinner content="Loading..." dim size="big" />
@@ -94,7 +85,11 @@ function EventDetailedPage({
           lat={lat}
           lng={lng}
         />
-        <EventDetailedChat />
+        <EventDetailedChat
+          addEventComment={addEventComment}
+          eventId={event.id}
+          eventChat={eventChat}
+        />
       </Grid.Column>
       <Grid.Column width={6}>
         <EventDetailedSidebar attendees={attendees} />
@@ -104,7 +99,9 @@ function EventDetailedPage({
 }
 
 EventDetailedPage.propTypes = {
+  eventChat: PropTypes.array.isRequired,
   goingToEvent: PropTypes.func.isRequired,
+  addEventComment: PropTypes.func.isRequired,
   cancelGoingToEvent: PropTypes.func.isRequired,
   event: PropTypes.object.isRequired,
   auth: PropTypes.object.isRequired,
@@ -117,7 +114,9 @@ EventDetailedPage.propTypes = {
   }).isRequired,
 }
 
-EventDetailedPage.defaultProps = {}
+EventDetailedPage.defaultProps = {
+  eventChat: [],
+}
 
 function mapState(state) {
   let event = {}
@@ -129,18 +128,26 @@ function mapState(state) {
     event.date = event.date.toDate()
   }
 
+  let eventChat = state.firebase.data.event_chat
+  eventChat =
+    (event.id && !isEmpty(eventChat) && objectToArray(eventChat[event.id])) ||
+    []
+  const chatTree = createDataTree(eventChat)
   return {
     event,
     auth: state.firebase.auth,
+    eventChat: chatTree,
   }
 }
 
 const mapDispatch = {
   goingToEvent,
   cancelGoingToEvent,
+  addEventComment,
 }
 
 export default compose(
+  firebaseConnect(({ match }) => [`event_chat/${match.params.id}`]),
   withFirestore,
   connect(
     mapState,

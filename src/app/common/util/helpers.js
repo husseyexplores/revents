@@ -26,3 +26,15 @@ export function objectToArray(object) {
     )
   }
 }
+
+export const createDataTree = dataset => {
+  // `dataset` will be a flat array as in our firebase comments
+  const hashTable = Object.create(null)
+  dataset.forEach(a => (hashTable[a.id] = { ...a, childNodes: [] }))
+  const dataTree = []
+  dataset.forEach(a => {
+    if (a.parentId) hashTable[a.parentId].childNodes.push(hashTable[a.id])
+    else dataTree.push(hashTable[a.id])
+  })
+  return dataTree
+}
