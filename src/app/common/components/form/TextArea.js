@@ -10,10 +10,12 @@ function TextArea({
   width,
   rows,
   meta: { touched, error },
+  style,
 }) {
   return (
     <Form.Field error={touched && !!error} width={width}>
       <textarea
+        style={{ ...style }}
         {...input}
         placeholder={placeholder}
         type={type}
@@ -38,6 +40,7 @@ TextArea.propTypes = {
   width: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   rows: PropTypes.number,
   meta: PropTypes.object,
+  style: PropTypes.object,
 }
 
 TextArea.defaultProps = {
