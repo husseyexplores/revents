@@ -20,7 +20,7 @@ export function createEvent(event) {
     }
 
     const user = firebase.auth().currentUser
-    const photoURL = getState().firebase.profile.photoURL
+    const photoURL = getState().firebase.profile.photoURL || '/assets/user.png'
     const newEvent = createNewEvent(user, photoURL, event)
 
     try {

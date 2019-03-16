@@ -35,3 +35,4 @@ _redirects
 /dist
 /temp
 /src/features/temp
+/functions/node_modules

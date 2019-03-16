@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
-import { Segment, Menu, Header, Card, Image, Tab } from 'semantic-ui-react'
+import { Segment, Header, Card, Image, Tab } from 'semantic-ui-react'
 import format from 'date-fns/format'
 
 function formatDateTime(date) {

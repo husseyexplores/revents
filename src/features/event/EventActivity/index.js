@@ -1,3 +1,3 @@
-import EventActicity from './EventActicity'
+import EventActivity from './EventActivity'
 
-export default EventActicity
+export default EventActivity
