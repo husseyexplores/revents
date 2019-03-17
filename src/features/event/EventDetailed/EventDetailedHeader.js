@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
-import { Segment, Image, Item, Header, Button } from 'semantic-ui-react'
+import { Segment, Image, Item, Header, Button, Label } from 'semantic-ui-react'
 
 const eventImageStyle = {
   filter: 'brightness(30%)',
@@ -23,8 +23,10 @@ function EventDetailedHeader({
   isGoing,
   goingToEvent,
   cancelGoingToEvent,
+  authenticated,
+  openModal,
 }) {
-  const { title, category, formattedDate, hostedBy, id } = event
+  const { title, category, formattedDate, hostedBy, id, cancelled } = event
 
   return (
     <Segment.Group>
@@ -62,7 +64,8 @@ function EventDetailedHeader({
                 Cancel My Place
               </Button>
             )}
-            {!isGoing && (
+
+            {!isGoing && authenticated && !cancelled && (
               <Button
                 loading={isLoading}
                 disabled={isLoading}
@@ -72,6 +75,18 @@ function EventDetailedHeader({
                 JOIN THIS EVENT
               </Button>
             )}
+
+            {!authenticated && (
+              <Button
+                loading={isLoading}
+                disabled={isLoading}
+                onClick={() => openModal('UnauthModal', { goBack: false })}
+                color="teal"
+              >
+                JOIN THIS EVENT
+              </Button>
+            )}
+            {}
           </>
         )}
 
@@ -79,6 +94,14 @@ function EventDetailedHeader({
           <Button as={Link} to={`/manage/${id}`} color="orange">
             Manage Event
           </Button>
+        )}
+
+        {cancelled && (
+          <Label
+            size="large"
+            color="red"
+            content="This event has been cancelled"
+          />
         )}
       </Segment>
     </Segment.Group>
@@ -90,8 +113,10 @@ EventDetailedHeader.propTypes = {
   isHost: PropTypes.bool.isRequired,
   isGoing: PropTypes.bool.isRequired,
   goingToEvent: PropTypes.func.isRequired,
+  openModal: PropTypes.func.isRequired,
   cancelGoingToEvent: PropTypes.func.isRequired,
   isLoading: PropTypes.bool.isRequired,
+  authenticated: PropTypes.bool.isRequired,
 }
 
 export default EventDetailedHeader

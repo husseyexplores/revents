@@ -4,6 +4,7 @@ import { Route, Switch, withRouter } from 'react-router-dom'
 import { Container } from 'semantic-ui-react'
 import { connect } from 'react-redux'
 
+import NotFound from './NotFound'
 import NavBar from '../../features/nav/NavBar/'
 import HomePage from '../../features/home/HomePage'
 import EventDashBoard from '../../features/event/EventDashboard/'
@@ -14,8 +15,7 @@ import UserDetailedPage from '../../features/user/UserDetailed/'
 import { SettingsDashboard } from '../../features/user/Settings/'
 import ModalManager from '../../features/modals/Modal/ModalManager'
 import Spinner from '../common/components/loaders/Spinner'
-
-import TemporaryComponent from '../../features/temp/'
+import { UserIsAuthenticated } from '../../features/auth/authWrapper'
 
 class App extends Component {
   render() {
@@ -41,12 +41,27 @@ class App extends Component {
                 <Switch>
                   <Route path="/events" component={EventDashBoard} />
                   <Route path="/event/:id" component={EventDetailedPage} />
-                  <Route path="/manage/:id" component={EventForm} />
-                  <Route path="/create-event" component={EventForm} />
-                  <Route path="/people" component={PeopleDashboard} />
-                  <Route path="/profile/:id" component={UserDetailedPage} />
-                  <Route path="/settings" component={SettingsDashboard} />
-                  <Route path="/temp" component={TemporaryComponent} />
+                  <Route
+                    path="/manage/:id"
+                    component={UserIsAuthenticated(EventForm)}
+                  />
+                  <Route
+                    path="/create-event"
+                    component={UserIsAuthenticated(EventForm)}
+                  />
+                  <Route
+                    path="/people"
+                    component={UserIsAuthenticated(PeopleDashboard)}
+                  />
+                  <Route
+                    path="/profile/:id"
+                    component={UserIsAuthenticated(UserDetailedPage)}
+                  />
+                  <Route
+                    path="/settings"
+                    component={UserIsAuthenticated(SettingsDashboard)}
+                  />
+                  <Route component={NotFound} />
                 </Switch>
               </Container>
             </>

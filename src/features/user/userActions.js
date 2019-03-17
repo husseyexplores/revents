@@ -212,13 +212,13 @@ export function goingToEvent(event) {
   return async (dispatch, getState, { firebase }) => {
     const user = firebase.auth().currentUser
     // can't rely with AUTH photo, it doesn't update very frequently
-    const photoURL = getState().firebase.profile.photoURL
+    const { photoURL, displayName } = getState().firebase.profile
     const attendee = {
       host: false,
       going: true,
       joinDate: new Date(Date.now()),
-      photoURL: photoURL || null,
-      displayName: user.displayName,
+      photoURL: photoURL || '/assets/user.png',
+      displayName: displayName,
     }
 
     const attendeeLookup = {

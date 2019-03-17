@@ -183,17 +183,21 @@ function EventForm({
             >
               Submit
             </Button>
+
             <Button type="button" onClick={handleCancelForm}>
               Cancel
             </Button>
-            <Button
-              type="button"
-              color={event.cancelled ? 'green' : 'red'}
-              floated="right"
-              onClick={handleCancelEvent(!event.cancelled, event.id)}
-            >
-              {event.cancelled ? 'Reactivate Event' : 'Cancel Event'}
-            </Button>
+
+            {event.id && (
+              <Button
+                type="button"
+                color={event.cancelled ? 'green' : 'red'}
+                floated="right"
+                onClick={handleCancelEvent(!event.cancelled, event.id)}
+              >
+                {event.cancelled ? 'Reactivate Event' : 'Cancel Event'}
+              </Button>
+            )}
           </Form>
         </Segment>
       </Grid.Column>

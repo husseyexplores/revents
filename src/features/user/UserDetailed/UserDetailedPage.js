@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { compose } from 'redux'
-import { firestoreConnect, isEmpty } from 'react-redux-firebase'
+import { withFirestore, firestoreConnect, isEmpty } from 'react-redux-firebase'
 import { connect } from 'react-redux'
+import { toastr } from 'react-redux-toastr'
 import { Grid } from 'semantic-ui-react'
 
 import UserDetailedHeader from './UserDetailedHeader'
@@ -27,7 +28,24 @@ function UserDetailedPage({
   unFollowUser,
   isEventsLoading,
   events,
+  match: { params },
+  history,
+  firestore,
 }) {
+  useEffect(() => {
+    ;(async () => {
+      const userId = params.id
+      const user = await firestore.get(`users/${userId}`)
+      if (!user.exists) {
+        toastr.error(
+          'Not found!',
+          'The profile you are trying to visit does not exist'
+        )
+        history.push('/not-found')
+      }
+    })()
+  }, [firestore, history, params.id])
+
   // Get user events
   useEffect(() => {
     if (user && user.createdAt) {
@@ -95,6 +113,9 @@ UserDetailedPage.propTypes = {
   events: PropTypes.array.isRequired,
   isEventsLoading: PropTypes.bool.isRequired,
   isFollowing: PropTypes.bool.isRequired,
+  match: PropTypes.object.isRequired,
+  history: PropTypes.object.isRequired,
+  firestore: PropTypes.object.isRequired,
 }
 
 function mapState(state, props) {
@@ -153,6 +174,7 @@ const mapDispatch = {
 }
 
 export default compose(
+  withFirestore,
   connect(
     mapState,
     mapDispatch

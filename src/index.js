@@ -38,6 +38,8 @@ const firestoreInstance = createFirestoreInstance(
   rrfConfig,
   store.dispatch
 )
+window.firestore_ = firestoreInstance
+window.firebase_ = firebase
 
 const rootEl = document.getElementById('root')
 
