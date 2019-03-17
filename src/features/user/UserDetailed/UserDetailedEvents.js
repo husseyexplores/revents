@@ -28,7 +28,7 @@ function UserDetailedEvents({ events, isEventsLoading, changeTab }) {
       />
       <br />
 
-      {events && events.length && (
+      {events && events.length > 0 && (
         <Card.Group itemsPerRow={5}>
           {events.map(evt => (
             <Card key={evt.id} as={Link} to={`/event/${evt.id}`}>
@@ -43,6 +43,7 @@ function UserDetailedEvents({ events, isEventsLoading, changeTab }) {
           ))}
         </Card.Group>
       )}
+      {events && events.length === 0 && <p>No events.</p>}
     </Segment>
   )
 }

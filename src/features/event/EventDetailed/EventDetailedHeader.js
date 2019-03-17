@@ -17,6 +17,7 @@ const eventImageTextStyle = {
 }
 
 function EventDetailedHeader({
+  isLoading,
   event,
   isHost,
   isGoing,
@@ -62,7 +63,12 @@ function EventDetailedHeader({
               </Button>
             )}
             {!isGoing && (
-              <Button onClick={() => goingToEvent(event)} color="teal">
+              <Button
+                loading={isLoading}
+                disabled={isLoading}
+                onClick={() => goingToEvent(event)}
+                color="teal"
+              >
                 JOIN THIS EVENT
               </Button>
             )}
@@ -85,6 +91,7 @@ EventDetailedHeader.propTypes = {
   isGoing: PropTypes.bool.isRequired,
   goingToEvent: PropTypes.func.isRequired,
   cancelGoingToEvent: PropTypes.func.isRequired,
+  isLoading: PropTypes.bool.isRequired,
 }
 
 export default EventDetailedHeader

@@ -10,8 +10,10 @@ import EventList from '../EventList/'
 import EventActivity from '../EventActivity'
 
 import { getEventsForDashboard } from '../eventActions'
+import { FETCH_EVENTS_DB } from '../eventConstants'
 
 function EventDashBoard({
+  dispatch,
   activities,
   events,
   isLoading,
@@ -25,13 +27,15 @@ function EventDashBoard({
     setContextRef(contextRef)
   }
 
+  // initial fetch
   useEffect(() => {
+    dispatch({ type: FETCH_EVENTS_DB, payload: { events: [], noMerge: true } })
     async function getInitialEvents() {
       await getEventsForDashboard()
       setLoadingInitial(false)
     }
     getInitialEvents()
-  }, [getEventsForDashboard])
+  }, [dispatch, getEventsForDashboard])
 
   async function getMoreEvents() {
     await getEventsForDashboard()
@@ -69,6 +73,7 @@ EventDashBoard.propTypes = {
   events: PropTypes.array.isRequired,
   isLoading: PropTypes.bool.isRequired,
   getEventsForDashboard: PropTypes.func.isRequired,
+  dispatch: PropTypes.func.isRequired,
   hasMoreEvents: PropTypes.bool.isRequired,
 }
 

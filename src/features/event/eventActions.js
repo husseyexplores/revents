@@ -1,4 +1,5 @@
 import { toastr } from 'react-redux-toastr'
+import compareDateAsc from 'date-fns/compare_asc'
 import { firestoreInstance as firestore } from '../../'
 
 import { createNewEvent } from '../../app/common/util/helpers'
@@ -50,17 +51,53 @@ export function createEvent(event) {
 }
 
 export function updateEvent(event) {
-  return async () => {
+  return async (dispatch, getState) => {
+    dispatch(asyncActionStart())
     let date = event.date
-    if (typeof event.date === 'string') {
+    if (typeof date === 'string') {
       // convert this: "1971-08-26 05:30" to JS Date object
       date = new Date(date)
     }
+    console.log({
+      eventDate: event.date,
+      date,
+    })
 
     try {
-      await firestore.update(`events/${event.id}`, { ...event, date })
+      const eventDateTimestamp = getState().firestore.ordered.events[0].date
+      const eventDocRef = firestore.collection('events').doc(event.id)
+      const dateEqual = compareDateAsc(eventDateTimestamp.toDate(), date)
+      if (dateEqual !== 0) {
+        const batch = firestore.batch()
+        await batch.update(eventDocRef, { ...event, date })
+
+        const eventAttendeeRef = firestore.collection('event_attendee')
+        const eventAttendeeQuery = eventAttendeeRef.where(
+          'eventId',
+          '==',
+          event.id
+        )
+        const eventAttendeeQuerySnap = await eventAttendeeQuery.get()
+
+        for (let i = 0; i < eventAttendeeQuerySnap.docs.length; i++) {
+          const docRef = firestore
+            .collection('event_attendee')
+            .doc(eventAttendeeQuerySnap.docs[i].id)
+          await batch.update(docRef, {
+            eventDate: date,
+          })
+        }
+
+        console.log({ batch })
+        await batch.commit()
+      } else {
+        await eventDocRef.update({ ...event, date })
+      }
+
+      dispatch(asyncActionFinish())
       toastr.success('Sucess!', 'Event has been updated')
     } catch (error) {
+      dispatch(asyncActionError())
       console.log(error) // eslint-disable-line no-console
       toastr.error('Oops!', 'Something went wrong')
     }

@@ -18,6 +18,7 @@ import { goingToEvent, cancelGoingToEvent } from '../../user/userActions'
 import { addEventComment } from '../eventActions'
 
 function EventDetailedPage({
+  isLoading,
   addEventComment,
   goingToEvent,
   cancelGoingToEvent,
@@ -77,6 +78,7 @@ function EventDetailedPage({
           isGoing={isGoing}
           goingToEvent={goingToEvent}
           cancelGoingToEvent={cancelGoingToEvent}
+          isLoading={isLoading}
         />
         <EventDetailedInfo
           description={description}
@@ -99,6 +101,7 @@ function EventDetailedPage({
 }
 
 EventDetailedPage.propTypes = {
+  isLoading: PropTypes.bool.isRequired,
   eventChat: PropTypes.array.isRequired,
   goingToEvent: PropTypes.func.isRequired,
   addEventComment: PropTypes.func.isRequired,
@@ -137,6 +140,7 @@ function mapState(state) {
     event,
     auth: state.firebase.auth,
     eventChat: chatTree,
+    isLoading: state.async.isLoading,
   }
 }
 

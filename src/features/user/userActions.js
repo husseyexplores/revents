@@ -126,11 +126,59 @@ export function deletePhoto(photo) {
 
 export function setMainPhoto(photoURL) {
   return async (dispatch, getState, { firebase }) => {
+    dispatch(asyncActionStart())
+    const user = firebase.auth().currentUser
+    const updateFromDate = new Date('2018')
+    const userDocRef = firestore.collection('users').doc(user.uid)
+    const eventAttendeeRef = firestore.collection('event_attendee')
+    const activityRef = firestore.collection('activity')
+
     try {
-      dispatch(asyncActionStart())
-      await firebase.updateProfile({
+      const batch = firestore.batch()
+      await batch.update(userDocRef, {
         photoURL,
       })
+
+      const eventQuery = await eventAttendeeRef
+        .where('userUid', '==', user.uid)
+        .where('eventDate', '>=', updateFromDate)
+      const eventQuerySnap = await eventQuery.get()
+
+      for (let i = 0; i < eventQuerySnap.docs.length; i++) {
+        const eventDocRef = await firestore
+          .collection('events')
+          .doc(eventQuerySnap.docs[i].data().eventId)
+        const event = await eventDocRef.get()
+        if (event.data().hostUid === user.uid) {
+          batch.update(eventDocRef, {
+            hostPhotoURL: photoURL,
+            [`attendees.${user.uid}.photoURL`]: photoURL,
+          })
+        } else {
+          batch.update(eventDocRef, {
+            [`attendees.${user.uid}.photoURL`]: photoURL,
+          })
+        }
+      }
+
+      const activityQuery = await activityRef.where('hostUid', '==', user.uid)
+      const activityQuerySnap = await activityQuery.get()
+
+      for (let i = 0; i < activityQuerySnap.docs.length; i++) {
+        const activityDocRef = await firestore
+          .collection('activity')
+          .doc(activityQuerySnap.docs[i].id)
+
+        batch.update(activityDocRef, {
+          photoURL,
+        })
+      }
+
+      console.log({ batch })
+      await batch.commit()
+      // await firebase.updateProfile({
+      //   photoURL,
+      // })
       dispatch(asyncActionFinish())
     } catch (error) {
       dispatch(asyncActionError())
@@ -148,7 +196,6 @@ export function goingToEvent(event) {
     const user = firebase.auth().currentUser
     // can't rely with AUTH photo, it doesn't update very frequently
     const photoURL = getState().firebase.profile.photoURL
-
     const attendee = {
       host: false,
       going: true,
@@ -157,27 +204,28 @@ export function goingToEvent(event) {
       displayName: user.displayName,
     }
 
+    const attendeeLookup = {
+      eventId: event.id,
+      userUid: user.uid,
+      eventDate: new Date(event.date),
+      host: false,
+    }
+
     try {
       dispatch(asyncActionStart())
-      // create a new attendee entry in this doc:
-      // `events<doc>/[event.id]<doc> => attendees.[user.uid]<object>`
-      await firestore.update(`events/${event.id}`, {
-        // computed key
-        [`attendees.${user.uid}`]: attendee,
-      })
+      const eventDocRef = firestore.collection('events').doc(event.id)
+      // get the ref of the doc that WILL be created
+      const eventAttendeeDocRef = firestore
+        .collection('event_attendee')
+        .doc(`${event.id}_${user.uid}`)
 
-      // add user to events lookup table for queries - no sqql db stuff
-      // `event_attendee<doc>/[event.id]_[user.uid]<doc>` => attendeeLookup
-      const attendeeLookup = {
-        eventId: event.id,
-        userUid: user.uid,
-        eventDate: new Date(event.date),
-        host: false,
-      }
-      await firestore.set(
-        `event_attendee/${event.id}_${user.uid}`,
-        attendeeLookup
-      )
+      await firestore.runTransaction(async transaction => {
+        await transaction.get(eventDocRef)
+        await transaction.update(eventDocRef, {
+          [`attendees.${user.uid}`]: attendee,
+        })
+        await transaction.set(eventAttendeeDocRef, attendeeLookup)
+      })
 
       dispatch(asyncActionFinish())
       toastr.success('Success!', 'You have signed up to the event')
