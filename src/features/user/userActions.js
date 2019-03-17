@@ -174,7 +174,6 @@ export function setMainPhoto(photoURL) {
         })
       }
 
-      console.log({ batch })
       await batch.commit()
       // await firebase.updateProfile({
       //   photoURL,

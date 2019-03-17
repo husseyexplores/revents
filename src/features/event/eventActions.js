@@ -58,10 +58,6 @@ export function updateEvent(event) {
       // convert this: "1971-08-26 05:30" to JS Date object
       date = new Date(date)
     }
-    console.log({
-      eventDate: event.date,
-      date,
-    })
 
     try {
       const eventDateTimestamp = getState().firestore.ordered.events[0].date
@@ -88,7 +84,6 @@ export function updateEvent(event) {
           })
         }
 
-        console.log({ batch })
         await batch.commit()
       } else {
         await eventDocRef.update({ ...event, date })
