@@ -16,22 +16,27 @@ import { firestoreErrMsg } from '../../app/common/util/helpers'
 export function createEvent(event) {
   return async (dispatch, getState, { firebase }) => {
     let date = event.date
-    if (typeof event.date === 'string') {
+    if (typeof date === 'string') {
       // convert this: "1971-08-26 05:30" to JS Date object
       date = new Date(date)
+    } else if (
+      date instanceof Object &&
+      date.constructor.name === 'Timestamp'
+    ) {
+      date = date.toDate()
     }
 
     const user = firebase.auth().currentUser
     const photoURL = getState().firebase.profile.photoURL || '/assets/user.png'
-    const newEvent = createNewEvent(user, photoURL, event)
+    const newEvent = createNewEvent(user, photoURL, {
+      ...event,
+      date,
+    })
 
     try {
       dispatch(asyncActionStart())
       // create new event in firestore
-      const createdEvent = await firestore.add(`events`, {
-        ...newEvent,
-        date: date,
-      })
+      const createdEvent = await firestore.add(`events`, newEvent)
 
       // create new events lookup table for queries - no sqql db stuff
       await firestore.set(`event_attendee/${createdEvent.id}_${user.uid}`, {
